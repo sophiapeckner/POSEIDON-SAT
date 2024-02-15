@@ -27,11 +27,18 @@ class LabeledObject:
         self.truncated = truncated
         self.difficult = difficult
         self.bndbox = bndbox
-        self.rotated_box = rotated_box
+        self.rotated_bndbox = rotated_box
         self.level_group = levels
 
+
+class LabeledImage:
+    def __init__(self, filename: str, objects: 'list[LabeledObject]'):
+        self.filename = filename
+        self.objects = objects
+
+
 def parse_voc(root_path: str, image_set: str):
-    labeled_objects: list[LabeledObject] = []
+    labeled_images: list[LabeledImage] = []
     image_set_path = os.path.join(root_path, 'ImageSets', f'{image_set}.txt')
     with open(image_set_path, 'r') as f:
         image_names = f.read().splitlines()
@@ -42,6 +49,7 @@ def parse_voc(root_path: str, image_set: str):
         root = tree.getroot()
         filename = root.find('filename').text
 
+        labeled_objects: list[LabeledObject] = []
         for obj in root.findall('object'):
             name = obj.find('name').text
             truncated = obj.find('truncted').text == '1'
@@ -57,5 +65,7 @@ def parse_voc(root_path: str, image_set: str):
 
             labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box), levels)
             labeled_objects.append(labeled_object)
+        
+        labeled_images.append(LabeledImage(filename, labeled_objects))
 
-    return labeled_objects
+    return labeled_images
