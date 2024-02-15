@@ -7,7 +7,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from extraction.instance_extractor import InstanceExtractor
-from rembg import remove
+#from rembg import remove
 
 
 class COCOInstanceExtractor(InstanceExtractor):

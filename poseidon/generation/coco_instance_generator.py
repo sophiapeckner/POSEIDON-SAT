@@ -8,7 +8,7 @@ from generation.instance_generator import InstanceGenerator
 import random
 import shutil
 from filecmp import dircmp
-import swifter
+#import swifter
 from utils.auxiliar import ignore_extended_attributes, NpEncoder
 
 
