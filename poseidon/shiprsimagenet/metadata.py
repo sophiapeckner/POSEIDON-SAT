@@ -12,7 +12,7 @@ class HorizontalBoundingBox:
 
 
 class OrientedBoundingBox:
-    def __init__(self, cx: int, cy: int, width: int, height: int, rot: float):
+    def __init__(self, cx: float, cy: float, width: float, height: float, rot: float):
         self.center_x = cx
         self.center_y = cy
         self.width = width
@@ -22,7 +22,7 @@ class OrientedBoundingBox:
 
 class LabeledObject:
     def __init__(self, filename: str, name: str, truncated: bool, difficult: bool, bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'tuple[int, int, int, int]'):
-        self.filename = filename
+        self.source_file = filename
         self.name = name
         self.truncated = truncated
         self.difficult = difficult
@@ -32,7 +32,7 @@ class LabeledObject:
 
 def parse_voc(root_path: str, image_set: str):
     labeled_objects: list[LabeledObject] = []
-    image_set_path = os.path.join(root_path, 'ImageSets', 'Main', f'{image_set}.txt')
+    image_set_path = os.path.join(root_path, 'ImageSets', f'{image_set}.txt')
     with open(image_set_path, 'r') as f:
         image_names = f.read().splitlines()
 
@@ -44,14 +44,14 @@ def parse_voc(root_path: str, image_set: str):
 
         for obj in root.findall('object'):
             name = obj.find('name').text
-            truncated = obj.find('truncated').text == '1'
+            truncated = obj.find('truncted').text == '1'
             difficult = obj.find('difficult').text == '1'
 
             bndbox = obj.find('bndbox')
             bndbox = {child.tag: int(child.text) for child in bndbox}
             
             rotated_box = obj.find('rotated_box')
-            rotated_box = {child.tag: float(child.text) if child.tag == 'rot' else int(child.text) for child in rotated_box}
+            rotated_box = {child.tag: float(child.text) for child in rotated_box}
 
             levels = tuple([int(obj.find(f'level_{i}').text) for i in range(4)])
 
