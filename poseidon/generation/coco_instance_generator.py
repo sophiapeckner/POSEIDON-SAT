@@ -9,7 +9,7 @@ import random
 import shutil
 from filecmp import dircmp
 #import swifter
-from utils.auxiliar import ignore_extended_attributes, NpEncoder
+from utils.misc import ignore_extended_attributes, NpEncoder
 
 
 class COCOInstanceGenerator(InstanceGenerator):

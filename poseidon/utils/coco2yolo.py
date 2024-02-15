@@ -3,7 +3,7 @@ import json
 import shutil
 import pandas as pd
 from tqdm import tqdm
-from utils.auxiliar import ignore_extended_attributes
+from utils.misc import ignore_extended_attributes
 
 
 

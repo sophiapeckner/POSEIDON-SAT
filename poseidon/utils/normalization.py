@@ -4,7 +4,7 @@ import shutil
 import pandas as pd
 from tqdm import tqdm
 from PIL import Image
-from utils.auxiliar import ignore_extended_attributes, NpEncoder
+from utils.misc import ignore_extended_attributes, NpEncoder
 
 
 # Function to normalize an image

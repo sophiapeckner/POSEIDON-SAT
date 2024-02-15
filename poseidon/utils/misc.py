@@ -2,7 +2,7 @@ import numpy as np
 import os
 import json
 
-# MAC shitty file system related
+# MAC file system related
 # Stolen from: https://stackoverflow.com/a/70355470
 def ignore_extended_attributes(func, filename, exc_info):
     is_meta_file = os.path.basename(filename).startswith("._")
