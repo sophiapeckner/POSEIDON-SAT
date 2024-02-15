@@ -1,12 +1,11 @@
 from generation.coco_instance_generator import COCOInstanceGenerator
 from extraction.coco_instance_extractor import COCOInstanceExtractor
-from utils.normalization import COCONormalization
+from utils.normalization import normalize
 from utils.coco2yolo import COCO2YOLO
 
 if __name__ == '__main__':
     
-    #normalizator = COCONormalization()
-    #normalizator.normalize("/Users/pabloruizponce/Vainas/SDSNormalized")
+    normalize("/Users/pabloruizponce/Vainas/SDSNormalized")
 
     extractor = COCOInstanceExtractor()
     extractor.dataset_stats()
