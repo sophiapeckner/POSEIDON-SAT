@@ -4,3 +4,5 @@ This fork of the POSEIDON data augmentation tool, described by P. Ruiz-Ponce, D.
 
 The ShipRSImageNet dataset is avaialble in the [GitHub repository](https://github.com/zzndream/ShipRSImageNet) published by the authors. As the
 ShipRSImageNet dataset is licensed for only academic use, an augmented dataset using this tool is subject to the same license. See the GitHub repository for the ShipRSImageNet dataset for more information.
+
+The [ShipRSImageNet devkit](https://github.com/zzndream/ShipRSImageNet_devkit) is useful for exploring the dataset, as are the various functions inside the `poseidon/shiprsimagenet` directory.
