@@ -1,5 +1,8 @@
 import os
 import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+
+from PIL import Image, ImageDraw
 from pathlib import Path
 
 
@@ -39,16 +42,39 @@ class LabeledImage:
     def __init__(self, path: str, objects: 'list[LabeledObject]'):
         self.file_path = path
         self.objects = objects
+    
+
+    def show(self):
+        # Load the image
+        img = Image.open(self.file_path)
+
+        # Draw each bounding box
+        imgDraw = ImageDraw.Draw(img)
+        for obj in self.objects:
+            rotated_box = obj.rotated_bndbox
+            imgDraw.polygon([(rotated_box.x1, rotated_box.y1), (rotated_box.x2, rotated_box.y2), (rotated_box.x3, rotated_box.y3), (rotated_box.x4, rotated_box.y4)], outline='lime', width=5)
+
+        # Display the image
+        plt.imshow(img)
+        plt.axis('off')
+        plt.show()
 
 
-def parse_voc(root_path: str, image_set: str):
-    labeled_images: list[LabeledImage] = []
-    image_set_path = os.path.join(root_path, 'ImageSets', f'{image_set}.txt')
-    with open(image_set_path, 'r') as f:
-        image_names = f.read().splitlines()
+class ShipRSImageNet:
+    def __init__(self, root_path: str):
+        self.root_path = root_path
 
-    for image_name in image_names:
-        annotation_path = os.path.join(root_path, 'Annotations', f'{Path(image_name).stem}.xml')
+
+    def get_image_set(self, image_set: str):
+        image_set_path = os.path.join(self.root_path, 'ImageSets', f'{image_set}.txt')
+        with open(image_set_path, 'r') as f:
+            image_names = f.read().splitlines()
+
+        return [self.get_image(image_name) for image_name in image_names]
+
+
+    def get_image(self, image_name: str):
+        annotation_path = os.path.join(self.root_path, 'Annotations', f'{Path(image_name).stem}.xml')
         tree = ET.parse(annotation_path)
         root = tree.getroot()
         filename = root.find('filename').text
@@ -71,9 +97,7 @@ def parse_voc(root_path: str, image_set: str):
             labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box_poly), levels, ship_location)
             labeled_objects.append(labeled_object)
         
-        labeled_images.append(LabeledImage(os.path.join(root_path, 'JPEGImages', image_name), labeled_objects))
-
-    return labeled_images
+        return LabeledImage(os.path.join(self.root_path, 'JPEGImages', image_name), labeled_objects)
 
 
 def _parse_to_int(s: str):
