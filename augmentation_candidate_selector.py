@@ -29,6 +29,7 @@ class AugmentationSelector:
 
     def show_image(self):
         img = Image.open(os.path.join(self.directory, self.image_files[self.index]))
+        print(f'Showing image: {self.index + 1} of {len(self.image_files)}')
         self.ax.axis('off')
         self.ax.imshow(img)
         plt.draw()
@@ -52,6 +53,7 @@ class AugmentationSelector:
                 for image in self.selected_images:
                     f.write(f'{image}\n')
             plt.close()
+            print('Done')
     
     def show(self):
         plt.show()
