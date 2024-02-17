@@ -1,5 +1,7 @@
+.vscode/launch.json
+
 # Dataset folders
-ShipRSImageNet_V1
+ShipRSImageNet_V1*
 augmentation_candidates
 
 # Byte-compiled / optimized / DLL files

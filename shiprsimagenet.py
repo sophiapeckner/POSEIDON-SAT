@@ -1,7 +1,10 @@
 import os
+import json
+import glob
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 
+from typing import Union
 from PIL import Image, ImageDraw
 from pathlib import Path
 
@@ -35,7 +38,7 @@ class OrientedBoundingBox:
 
 
 class LabeledObject:
-    def __init__(self, filename: str, name: str, truncated: bool, difficult: bool, bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'tuple[int, int, int, int]', location: 'str | None'):
+    def __init__(self, filename: str, name: str, truncated: 'Union[bool, None]', difficult: 'Union[bool, None]', bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'Union[tuple[int, int, int, int], None]', location: 'Union[bool, None]'):
         self.filename = filename
         self.name = name
         self.truncated = truncated
@@ -72,9 +75,25 @@ class ShipRSImageNet:
     def __init__(self, root_path: str):
         self.root_path = root_path
         self.voc_root_path = os.path.join(root_path, 'VOC_Format')
+        self.is_original_dataset = os.path.exists(self.voc_root_path)
+        self._coco_image_to_annotation_map = None
+        self._coco_category_map = {}
 
 
     def get_image_set(self, image_set: str):
+        # Processed image sets are in COCO format only. Original dataset should parse VOC format since it has more metadata
+        return self._get_voc_image_set(image_set) if self.is_original_dataset else self._get_coco_image_set(image_set)
+
+
+    def _get_coco_image_set(self, image_set: str):
+        annotation_file = os.path.join(self.root_path, f'ShipRSImageNet_bbox_{image_set}.json')
+        with open(annotation_file, 'r') as f:
+            annotations = json.load(f)
+        
+        return [self._get_coco_image(image['file_name']) for image in annotations['images']]
+
+
+    def _get_voc_image_set(self, image_set: str):
         image_set_path = os.path.join(self.voc_root_path, 'ImageSets', f'{image_set}.txt')
         with open(image_set_path, 'r') as f:
             image_names = f.read().splitlines()
@@ -83,6 +102,52 @@ class ShipRSImageNet:
 
 
     def get_image(self, image_name: str):
+        return self._get_voc_image(image_name) if self.is_original_dataset else self._get_coco_image(image_name)
+
+
+    def _get_coco_image(self, image_name: str):
+        if not self._coco_image_to_annotation_map:
+            self._coco_image_to_annotation_map = {}
+            metadata_files = glob.glob(os.path.join(self.root_path, '*.json'))
+            for metadata_file in metadata_files:
+                with open(metadata_file, 'r') as f:
+                    metadata = json.load(f)
+                    for idx, image in enumerate(metadata['images']):
+                        self._coco_image_to_annotation_map[image['file_name']] = (metadata_file, image['id'], idx)
+                    for category in metadata['categories']:
+                        self._coco_category_map[category['id']] = category['name']
+        
+        metadata_file, image_id, img_idx = self._coco_image_to_annotation_map[image_name]
+        with open(metadata_file, 'r') as f:
+            metadata = json.load(f)
+        
+        image_metadata = metadata['images'][img_idx]
+        image_annotations = [annotation for annotation in metadata['annotations'] if annotation['image_id'] == image_id]
+        
+        labeled_objects: list[LabeledObject] = []
+        for annotation in image_annotations:
+            category_name = self._coco_category_map[annotation['category_id']]
+            bndbox = HorizontalBoundingBox(
+                xmin=annotation['bbox'][0],
+                ymin=annotation['bbox'][1],
+                xmax=annotation['bbox'][0] + annotation['bbox'][2],
+                ymax=annotation['bbox'][1] + annotation['bbox'][3])
+            rotated_box = OrientedBoundingBox(*annotation['segmentation'][0])
+            labeled_object = LabeledObject(
+                filename=image_metadata['file_name'],
+                name=category_name,
+                truncated=None,
+                difficult=None,
+                bndbox=bndbox,
+                rotated_box=rotated_box,
+                levels=None,
+                location=None)
+            labeled_objects.append(labeled_object)
+        
+        return LabeledImage(os.path.join(self.root_path, 'images', image_name), labeled_objects)
+
+
+    def _get_voc_image(self, image_name: str):
         annotation_path = os.path.join(self.voc_root_path, 'Annotations', f'{Path(image_name).stem}.xml')
         tree = ET.parse(annotation_path)
         root = tree.getroot()

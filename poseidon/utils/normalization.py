@@ -17,11 +17,11 @@ def normalize_image(img_row, min_width, train_annotations, images_path):
     normalize_factor = min_width / img_row['width']
 
     # Open the image and resize it
-    img_path = os.path.join(images_path, 'train', img_row['file_name'])
+    img_path = os.path.join(images_path, img_row['file_name'])
     image = Image.open(img_path)
     img_row['width'] *= normalize_factor
     img_row['height'] *= normalize_factor
-    image.resize((int(img_row['width']), int(img_row['height'])))
+    image = image.resize((int(img_row['width']), int(img_row['height'])))
     image.save(img_path)
 
     # Normalize the bounding boxes
@@ -33,48 +33,58 @@ def normalize_image(img_row, min_width, train_annotations, images_path):
         x = center[0] - w / 2
         y = center[1] - h / 2
         instance['bbox'] = [x, y, w, h]
-
+        instance['area'] = w * h
+        
+        instance['segmentation'][0] = [float(round(x * normalize_factor)) for x in instance['segmentation'][0]]
+        
         """
         instance["bbox"][0] *= normalize_factor
         instance["bbox"][1] *= normalize_factor
         instance["bbox"][2] *= normalize_factor
         instance["bbox"][3] *= normalize_factor
-        instance["area"] *= normalize_factor
+        instance["area"] = instance["bbox"][2] * instance["bbox"][3]
+        
+        instance["segmentation"][0] = [round(x * normalize_factor) for x in instance["segmentation"][0]]
         """
 
         train_annotations['annotations'] = annotations.to_dict('records')
 
 # Function to normalize the dataset
-def normalize(output_path, base_path):
+def normalize(source_path, output_path, images_to_normalize, image_set):
+    annotation_file = f"ShipRSImageNet_bbox_{image_set}.json"
+
     # Remove the previous dataset if it exists
     if os.path.exists(output_path):
-        print("Removing previous dataset in the specified path")
+        print("Removing previous dataset in the specified output path...")
         shutil.rmtree(output_path, onerror=ignore_extended_attributes)
 
     # Copy the original dataset
-    print("Copying the original dataset")
-    shutil.copytree(base_path, 
-            os.path.join(output_path),
+    print("Copying the original dataset...")
+    os.mkdir(output_path)
+    shutil.copy(os.path.join(source_path, "COCO_Format", annotation_file), os.path.join(output_path, annotation_file))
+    shutil.copytree(os.path.join(source_path, "VOC_Format", "JPEGImages"),
+            os.path.join(output_path, 'images'),
             ignore=shutil.ignore_patterns('.*'))
 
     # Update the base path
-    base_path = output_path
+    source_path = output_path
 
     # Load the annotations
-    train_annotations_path = os.path.join(base_path, "annotations", "instances_train.json")
-    images_path = os.path.join(base_path, "images")
+    train_annotations_path = os.path.join(source_path, annotation_file)
+    images_path = os.path.join(source_path, 'images')
 
     with open(train_annotations_path) as f:
         train_annotations = json.load(f)
 
     # Normalize the images
     images = pd.DataFrame(train_annotations['images'])
-    min_width = images['width'].min()
+    selected_images = images[images['file_name'].isin(images_to_normalize)]
+    min_width = selected_images['width'].min()
 
     tqdm.pandas()
 
     print("Normalizing images from the train set")
-    images.progress_apply(lambda x: normalize_image(x, min_width=min_width, train_annotations=train_annotations, images_path=images_path), axis=1)
+    selected_images.progress_apply(lambda x: normalize_image(x, min_width=min_width, train_annotations=train_annotations, images_path=images_path), axis=1)
 
     # Save the annotations
     with open(train_annotations_path, 'w') as f:

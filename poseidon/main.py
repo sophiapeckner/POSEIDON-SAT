@@ -5,10 +5,16 @@ from utils.coco2yolo import COCO2YOLO
 
 if __name__ == '__main__':
     
-    normalize("/Users/pabloruizponce/Vainas/SDSNormalized")
+    with open('../selected_for_augmentation.txt', 'r') as f:
+        images_to_process = f.read().splitlines()
+    
+    print(f'Augmenting {len(images_to_process)} images...')
+    
+    print('Normalizing images...')
+    normalize("../ShipRSImageNet_V1", "../ShipRSImageNet_V1_Normalized", images_to_process, 'train_level_2')
 
-    extractor = COCOInstanceExtractor()
-    extractor.dataset_stats()
+    #extractor = COCOInstanceExtractor()
+    #extractor.dataset_stats()
     #extractor.extract()
 
     #generator = COCOInstanceGenerator()
