@@ -50,8 +50,10 @@ class LabeledObject:
 
 
 class LabeledImage:
-    def __init__(self, path: str, objects: 'list[LabeledObject]'):
+    def __init__(self, path: str, width: int, height: int, objects: 'list[LabeledObject]'):
         self.file_path = path
+        self.width = width
+        self.height = height
         self.objects = objects
     
 
@@ -144,7 +146,7 @@ class ShipRSImageNet:
                 location=None)
             labeled_objects.append(labeled_object)
         
-        return LabeledImage(os.path.join(self.root_path, 'images', image_name), labeled_objects)
+        return LabeledImage(os.path.join(self.root_path, 'images', image_name), int(image_metadata['width']), int(image_metadata['height']), labeled_objects)
 
 
     def _get_voc_image(self, image_name: str):
@@ -152,6 +154,8 @@ class ShipRSImageNet:
         tree = ET.parse(annotation_path)
         root = tree.getroot()
         filename = root.find('filename').text
+        width = int(root.find('size').find('width').text)
+        height = int(root.find('size').find('height').text)
 
         labeled_objects: list[LabeledObject] = []
         for obj in root.findall('object'):
@@ -171,7 +175,7 @@ class ShipRSImageNet:
             labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box_poly), levels, ship_location)
             labeled_objects.append(labeled_object)
         
-        return LabeledImage(os.path.join(self.voc_root_path, 'JPEGImages', image_name), labeled_objects)
+        return LabeledImage(os.path.join(self.voc_root_path, 'JPEGImages', image_name), width, height, labeled_objects)
 
 
 def _parse_to_int(s: str):
