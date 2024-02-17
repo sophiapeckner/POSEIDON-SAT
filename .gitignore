@@ -1,6 +1,6 @@
 # Dataset folders
 ShipRSImageNet_V1
-background_candidates
+augmentation_candidates
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
