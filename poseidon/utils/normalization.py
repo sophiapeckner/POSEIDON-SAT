@@ -19,35 +19,27 @@ def normalize_image(img_row, min_width, train_annotations, images_path):
     # Open the image and resize it
     img_path = os.path.join(images_path, img_row['file_name'])
     image = Image.open(img_path)
-    img_row['width'] *= normalize_factor
-    img_row['height'] *= normalize_factor
+    img_row['width'] = round(img_row['width'] * normalize_factor)
+    img_row['height'] = round(img_row['height'] * normalize_factor)
     image = image.resize((int(img_row['width']), int(img_row['height'])))
     image.save(img_path)
 
     # Normalize the bounding boxes
-    for i, instance in instances.iterrows():
+    for idx, instance in instances.iterrows():
         x, y, w, h = instance['bbox']
-        center = (x + w / 2, y + h / 2)
-        w = w * normalize_factor
-        h = h * normalize_factor
-        x = center[0] - w / 2
-        y = center[1] - h / 2
-        instance['bbox'] = [x, y, w, h]
+        x *= normalize_factor
+        y *= normalize_factor
+        w *= normalize_factor
+        h *= normalize_factor
+        
+        instance['bbox'] = [int(x), int(y), int(w), int(h)]
         instance['area'] = w * h
         
         instance['segmentation'][0] = [float(round(x * normalize_factor)) for x in instance['segmentation'][0]]
         
-        """
-        instance["bbox"][0] *= normalize_factor
-        instance["bbox"][1] *= normalize_factor
-        instance["bbox"][2] *= normalize_factor
-        instance["bbox"][3] *= normalize_factor
-        instance["area"] = instance["bbox"][2] * instance["bbox"][3]
+        annotations.loc[idx] = instance
         
-        instance["segmentation"][0] = [round(x * normalize_factor) for x in instance["segmentation"][0]]
-        """
-
-        train_annotations['annotations'] = annotations.to_dict('records')
+    train_annotations['annotations'] = annotations.to_dict('records')
 
 # Function to normalize the dataset
 def normalize(source_path, output_path, images_to_normalize, image_set):

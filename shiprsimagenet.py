@@ -15,6 +15,9 @@ class HorizontalBoundingBox:
         self.ymin = ymin
         self.xmax = xmax
         self.ymax = ymax
+    
+    def to_polygon(self):
+        return [(self.xmin, self.ymin), (self.xmax, self.ymin), (self.xmax, self.ymax), (self.xmin, self.ymax)]
 
 
 class OrientedBoundingBox:
@@ -27,11 +30,9 @@ class OrientedBoundingBox:
         self.y3 = y3
         self.x4 = x4
         self.y4 = y4
-    
 
     def to_polygon(self):
         return [(self.x1, self.y1), (self.x2, self.y2), (self.x3, self.y3), (self.x4, self.y4)]
-    
 
     def to_array(self):
         return [self.x1, self.y1, self.x2, self.y2, self.x3, self.y3, self.x4, self.y4]
@@ -65,6 +66,7 @@ class LabeledImage:
         imgDraw = ImageDraw.Draw(img)
         for obj in self.objects:
             rotated_box = obj.rotated_bndbox
+            imgDraw.polygon(obj.bndbox.to_polygon(), outline='red', width=3)
             imgDraw.polygon(rotated_box.to_polygon(), outline='lime', width=5)
 
         # Display the image
