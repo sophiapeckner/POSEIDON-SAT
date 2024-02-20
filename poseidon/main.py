@@ -10,8 +10,10 @@ if __name__ == '__main__':
     
     print(f'Augmenting {len(images_to_process)} images...')
     
-    print('Normalizing images...')
-    normalize("../ShipRSImageNet_V1", "../ShipRSImageNet_V1_Normalized", images_to_process, 'train_level_2')
+    # The original normalization method described by POSEIDON is not a good fit for the ShipRSImageNet dataset
+    # We'll instead normalize images based on the source and destination spatial resolutions
+    #print('Normalizing images...')
+    #normalize("../ShipRSImageNet_V1", "../ShipRSImageNet_V1_Normalized", images_to_process, 'train_level_2')
 
     #extractor = COCOInstanceExtractor()
     #extractor.dataset_stats()

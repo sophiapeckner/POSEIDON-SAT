@@ -4,7 +4,7 @@ import glob
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 
-from typing import Union
+from typing import Optional
 from PIL import Image, ImageDraw
 from pathlib import Path
 
@@ -39,7 +39,7 @@ class OrientedBoundingBox:
 
 
 class LabeledObject:
-    def __init__(self, filename: str, name: str, truncated: 'Union[bool, None]', difficult: 'Union[bool, None]', bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'Union[tuple[int, int, int, int], None]', location: 'Union[bool, None]'):
+    def __init__(self, filename: str, name: str, truncated: 'Optional[bool]', difficult: 'Optional[bool]', bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'Optional[tuple[int, int, int, int]]', location: 'Optional[bool]'):
         self.filename = filename
         self.name = name
         self.truncated = truncated
@@ -51,11 +51,13 @@ class LabeledObject:
 
 
 class LabeledImage:
-    def __init__(self, path: str, width: int, height: int, objects: 'list[LabeledObject]'):
+    def __init__(self, path: str, width: int, height: int, objects: 'list[LabeledObject]', source_dataset: 'Optional[str]' = None, spatial_resolution: 'Optional[float]' = None):
         self.file_path = path
         self.width = width
         self.height = height
         self.objects = objects
+        self.source_dataset = source_dataset
+        self.spatial_resolution = spatial_resolution
     
 
     def show(self):
@@ -158,6 +160,9 @@ class ShipRSImageNet:
         filename = root.find('filename').text
         width = int(root.find('size').find('width').text)
         height = int(root.find('size').find('height').text)
+        
+        source_dataset = root.find('source').find('dataset_source').text
+        spatial_resolution = root.find('Img_Resolution').text
 
         labeled_objects: list[LabeledObject] = []
         for obj in root.findall('object'):
@@ -177,7 +182,7 @@ class ShipRSImageNet:
             labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box_poly), levels, ship_location)
             labeled_objects.append(labeled_object)
         
-        return LabeledImage(os.path.join(self.voc_root_path, 'JPEGImages', image_name), width, height, labeled_objects)
+        return LabeledImage(os.path.join(self.voc_root_path, 'JPEGImages', image_name), width, height, labeled_objects, source_dataset, spatial_resolution)
 
 
 def _parse_to_int(s: str):
