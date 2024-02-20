@@ -18,6 +18,12 @@ class HorizontalBoundingBox:
     
     def to_polygon(self):
         return [(self.xmin, self.ymin), (self.xmax, self.ymin), (self.xmax, self.ymax), (self.xmin, self.ymax)]
+    
+    def to_array(self):
+        return [self.xmin, self.ymin, self.xmax, self.ymax]
+    
+    def to_tuple(self):
+        return (self.xmin, self.ymin, self.xmax, self.ymax)
 
 
 class OrientedBoundingBox:
@@ -39,8 +45,8 @@ class OrientedBoundingBox:
 
 
 class LabeledObject:
-    def __init__(self, filename: str, name: str, truncated: 'Optional[bool]', difficult: 'Optional[bool]', bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'Optional[tuple[int, int, int, int]]', location: 'Optional[bool]'):
-        self.filename = filename
+    def __init__(self, image_name: str, name: str, truncated: 'Optional[bool]', difficult: 'Optional[bool]', bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'Optional[tuple[int, int, int, int]]', location: 'Optional[bool]'):
+        self.image_name = image_name
         self.name = name
         self.truncated = truncated
         self.difficult = difficult
@@ -57,8 +63,13 @@ class LabeledImage:
         self.height = height
         self.objects = objects
         self.source_dataset = source_dataset
-        self.spatial_resolution = spatial_resolution
-    
+        self._spatial_resolution = spatial_resolution
+
+    @property
+    def spatial_resolution(self):
+        if self._spatial_resolution is not None:
+            return self._spatial_resolution
+        return None # TODO: Dynamically implement this based on the source_dataset property
 
     def show(self):
         # Load the image
@@ -82,6 +93,7 @@ class ShipRSImageNet:
         self.root_path = root_path
         self.voc_root_path = os.path.join(root_path, 'VOC_Format')
         self.is_original_dataset = os.path.exists(self.voc_root_path)
+        self.image_path = os.path.join(self.root_path, 'images') if not self.is_original_dataset else os.path.join(self.voc_root_path, 'JPEGImages')
         self._coco_image_to_annotation_map = None
         self._coco_category_map = {}
 
@@ -140,7 +152,7 @@ class ShipRSImageNet:
                 ymax=annotation['bbox'][1] + annotation['bbox'][3])
             rotated_box = OrientedBoundingBox(*annotation['segmentation'][0])
             labeled_object = LabeledObject(
-                filename=image_metadata['file_name'],
+                image_name=image_metadata['file_name'],
                 name=category_name,
                 truncated=None,
                 difficult=None,
@@ -150,7 +162,7 @@ class ShipRSImageNet:
                 location=None)
             labeled_objects.append(labeled_object)
         
-        return LabeledImage(os.path.join(self.root_path, 'images', image_name), int(image_metadata['width']), int(image_metadata['height']), labeled_objects)
+        return LabeledImage(os.path.join(self.image_path, image_name), int(image_metadata['width']), int(image_metadata['height']), labeled_objects)
 
 
     def _get_voc_image(self, image_name: str):
@@ -182,7 +194,7 @@ class ShipRSImageNet:
             labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box_poly), levels, ship_location)
             labeled_objects.append(labeled_object)
         
-        return LabeledImage(os.path.join(self.voc_root_path, 'JPEGImages', image_name), width, height, labeled_objects, source_dataset, spatial_resolution)
+        return LabeledImage(os.path.join(self.image_path, image_name), width, height, labeled_objects, source_dataset, spatial_resolution)
 
 
 def _parse_to_int(s: str):

@@ -4,12 +4,12 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
-from generation.instance_generator import InstanceGenerator
+from poseidon.generation.instance_generator import InstanceGenerator
 import random
 import shutil
 from filecmp import dircmp
 #import swifter
-from utils.misc import ignore_extended_attributes, NpEncoder
+from poseidon.utils.misc import ignore_extended_attributes, NpEncoder
 
 
 class COCOInstanceGenerator(InstanceGenerator):

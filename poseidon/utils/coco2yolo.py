@@ -3,7 +3,7 @@ import json
 import shutil
 import pandas as pd
 from tqdm import tqdm
-from utils.misc import ignore_extended_attributes
+from poseidon.utils.misc import ignore_extended_attributes
 
 
 

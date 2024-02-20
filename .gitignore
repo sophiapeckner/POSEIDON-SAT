@@ -3,6 +3,7 @@
 # Dataset folders
 ShipRSImageNet_V1*
 augmentation_candidates
+fishing_vessel_instances
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
