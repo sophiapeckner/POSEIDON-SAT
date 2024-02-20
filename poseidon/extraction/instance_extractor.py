@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from PIL import Image, ImageDraw
 from tqdm import tqdm
-#from rembg import remove
 from pathlib import Path
 
 from shiprsimagenet import ShipRSImageNet, LabeledObject
