@@ -16,67 +16,6 @@ class InstanceExtractor():
         self.images = { os.path.basename(img.file_path): img for img in source_dataset.get_image_set(image_set) }
 
 
-    # Extract and save a particular instance from an image
-    def extract_instance_image(self, img, bbox, output_path, angle_camera, angle_divisions=8):
-        output_path = os.path.split(output_path)
-        # Create output directory
-        if not os.path.exists(os.path.join(output_path[0], str(bbox['category_id']),)):
-            os.mkdir(os.path.join(output_path[0], str(bbox['category_id']),))
-        
-        if angle_camera is not None:
-            angle_camera_bin = int(angle_camera) % int(angle_divisions)
-            if not os.path.exists(os.path.join(output_path[0], str(bbox['category_id']), str(angle_camera_bin))):
-                os.mkdir(os.path.join(output_path[0], str(bbox['category_id']), str(angle_camera_bin)))
-            # Save instance on the path 'base_path/outputs/category_id/instance_id.png'
-            output_path = os.path.join(output_path[0], str(bbox['category_id']), str(angle_camera_bin), output_path[1])
-        else:
-            # Save instance on the path 'base_path/outputs/category_id/instance_id.png'
-            output_path = os.path.join(output_path[0], str(bbox['category_id']), output_path[1])
-        output_path = output_path + "_" + str(bbox['id']) + ".png"
-        # Extract bounding box
-        bbox = bbox['bbox']
-        x, y, w, h = bbox
-        x = int(x)
-        y = int(y)
-        w = int(w)
-        h = int(h)
-        instance = Image.fromarray(img[y:y+h, x:x+w])
-        instance.save(output_path)
-        return 
-
-
-    # Extract all instances from an image
-    def extract_instances_image(self, annotations, img_row, output_path):
-        output_path = os.path.join(output_path, str(img_row['id']))
-        angle_camera = None
-        #print(img_row)
-        if img_row["meta"] is not None and "gimbal_heading(degrees)" in img_row["meta"]:
-            angle_camera = img_row["meta"]["gimbal_heading(degrees)"]
-            bboxs =  annotations[annotations['image_id'] == img_row['id']]
-            img_path = os.path.join(self.images_path, 'train', img_row['file_name'])
-            img = Image.open(img_path) 
-            img = np.array(img)
-            bboxs.apply(lambda x: self.extract_instance_image(img, x, output_path, angle_camera) ,axis=1)
-        return
-
-
-    # Extract and save all the intances from all the images in the training set 
-    def extract(self, output_path='./outputs'):
-        # Create output directory
-        if not os.path.exists(output_path):
-            os.mkdir(output_path)
-            print("Output directory creted: ", output_path)
-        # Get annotations and images information
-        annotations = pd.DataFrame(self.train_annotations['annotations'])
-        images = pd.DataFrame(self.train_annotations['images'])
-        # Fancier
-        print("Extracting Instances:")
-        tqdm.pandas()
-        # Extraction
-        images.progress_apply(lambda x: self.extract_instances_image(annotations, x, output_path), axis=1)
-        return
-    
-
     def _extract_instance(self, instance: LabeledObject, instance_id: int, output_path: Path):
         img = Image.open(self.images[instance.image_name].file_path)
         
