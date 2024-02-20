@@ -21,9 +21,9 @@ A more detailed explaination as to why these modifications were made can be foun
 
 ## Repository Structure
 
-All the code involved in the actual dataset augmentation is contained in the `poseidon` folder.
+All the code involved in the actual dataset augmentation is contained in the `poseidon` folder. `main.py` in the root of the repository is used to run the augmentation process.
 
-Python scripts in the root of the repository are used to explore the dataset and to help select images for augmentation. These are used in the process outlined in the [dataset exploration Jupyter notebook](dataset_exploration.ipynb).
+Other python scripts in the root of the repository are used to explore the dataset and to help select images for augmentation. These are used in the process outlined in the [dataset exploration Jupyter notebook](dataset_exploration.ipynb).
 
 All code in this repository expects the ShipRSImageNet dataset to be extracted to the root of the repository, such that the `ShipRSImageNet_V1` folder is a sibling to the `poseidon` folder
 
@@ -31,12 +31,6 @@ All code in this repository expects the ShipRSImageNet dataset to be extracted t
 
 Additionally, the augmentation tool requires that the list of images to be augmented is in a file called `selected_for_augmentation.txt` in the root of the repository. This file should contain the file names of the images to be augmented, one per line. See the [dataset exploration notebook](dataset_exploration.ipynb) for information on how the images in this repository's [`selected_for_augmentation.txt`](selected_for_augmentation.txt) file were selected from the ShipRSImageNet dataset, the tools and techniques used to build this list of images to augment, and for information on factors that were considered in the selection of augmentation candidate images.
 
-After the `selected_for_augmentation.txt` file is created, the ShipRSImageNet dataset is extracted to the root of the repository, and dependencies are installed (see `requirements.txt` or `requirements-frozen.txt`), the code can be run by `cd`ing into the `poseidon` folder and executing the `main.py` script. To run this code using the same package versions that were used during the creation of this repository, use the `requirements-frozen.txt` file in a Python 3.8.10 environment.
+After the `selected_for_augmentation.txt` file is created, the ShipRSImageNet dataset is extracted to the root of the repository, and dependencies are installed (see `requirements.txt` or `requirements-frozen.txt`), the code can be run by executing the `main.py` script in the root of the repository. To run this code using the same package versions that were used during the creation of this repository, use the `requirements-frozen.txt` file in a Python 3.8.10 environment.
 
 TODO: Add frozen requirements file after finishing everything
-
-```bash
-cd poseidon
-python main.py
-```
-
