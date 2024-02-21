@@ -1,4 +1,4 @@
-from poseidon.generation.coco_instance_generator import COCOInstanceGenerator
+from poseidon.generation.instance_generator import InstanceGenerator
 from poseidon.extraction.instance_extractor import InstanceExtractor
 from poseidon.utils.normalization import normalize
 from poseidon.utils.coco2yolo import COCO2YOLO
