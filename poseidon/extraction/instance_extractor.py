@@ -1,7 +1,5 @@
 import os
 import shutil
-import pandas as pd
-import numpy as np
 from PIL import Image, ImageDraw
 from tqdm import tqdm
 from pathlib import Path
