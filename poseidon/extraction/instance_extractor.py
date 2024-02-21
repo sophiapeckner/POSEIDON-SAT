@@ -35,7 +35,7 @@ class InstanceExtractor():
         shutil.rmtree(str(out_path), ignore_errors=True)
         out_path.mkdir(parents=True)
 
-        instances = [ instance for image in self.images.values() for instance in image.objects if instance.name == class_name ]
+        instances = [ instance for image in self.images.values() for instance in image.objects if instance.name == class_name and not instance.truncated ]
 
-        for idx, instance in enumerate(tqdm(instances, desc=f'Extracting instances of {class_name}s from dataset...')):
+        for idx, instance in enumerate(tqdm(instances, desc=f'Extracting non-truncated instances of {class_name}s from dataset...')):
             self._extract_instance(instance, idx, out_path)
