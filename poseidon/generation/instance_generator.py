@@ -1,50 +1,63 @@
-import json
 import os
+import json
+import shutil
+#import swifter
 import pandas as pd
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
-import random
-import shutil
+from random import Random
+from typing import Optional
+from pathlib import Path
 from filecmp import dircmp
-#import swifter
+
 from poseidon.utils.misc import ignore_extended_attributes, NpEncoder
 
 
 class InstanceGenerator():
 
-    def __init__(self):
+    def __init__(self, instances_class_name: str, instances_path: str, instances_resolution: float, seed: Optional[int] = None):
+        self.instances_class = instances_class_name
+        self.instances_path = instances_path
+        self.instances_resolution = instances_resolution
         
-        # Get base path from the dataset
-        super().__init__()
-
-        # Get path from the images and the annotation files
-        self.train_annotations_path = os.path.join(self.base_path, "annotations", "instances_train.json")
-        self.a_train_annotations_path = os.path.join(self.base_path, "annotations", "instances_train_augmented.json")
-        self.images_path = os.path.join(self.base_path, "images")
-        self.images_a_train_path = os.path.join(self.base_path, "images", "train_augmented")
-
-        shutil.copyfile(self.train_annotations_path, 
-                        self.a_train_annotations_path)
+        #TODO: Add option to allow resetting/reseeding the RNG
+        self.random = Random(seed)
         
+        self._instance_images = list(map(Image.open, Path(instances_path).iterdir()))
         
-        if os.path.exists(self.images_a_train_path):
-            shutil.rmtree(self.images_a_train_path, onerror=ignore_extended_attributes)
+        # TODO: Factor source image parameters into function call
 
-        shutil.copytree(os.path.join(self.images_path, "train"), 
-                        self.images_a_train_path,
-                        ignore=shutil.ignore_patterns('.*'))
+        ## Get base path from the dataset
+        #super().__init__()
 
-        print("Copy Created")
+        ## Get path from the images and the annotation files
+        #self.train_annotations_path = os.path.join(self.base_path, "annotations", "instances_train.json")
+        #self.a_train_annotations_path = os.path.join(self.base_path, "annotations", "instances_train_augmented.json")
+        #self.images_path = os.path.join(self.base_path, "images")
+        #self.images_a_train_path = os.path.join(self.base_path, "images", "train_augmented")
 
-        # Read annotations as a dictionary
-        with open(self.a_train_annotations_path) as f:
-            self.train_annotations = json.load(f)
-        
-        self.annotations = pd.DataFrame(self.train_annotations['annotations'])
-        self.original_annotations = pd.DataFrame(self.train_annotations['annotations'])
-        self.images = pd.DataFrame(self.train_annotations['images'])
-        self.original_images = pd.DataFrame(self.train_annotations['images'])
+        #shutil.copyfile(self.train_annotations_path, 
+        #                self.a_train_annotations_path)
+        #
+        #
+        #if os.path.exists(self.images_a_train_path):
+        #    shutil.rmtree(self.images_a_train_path, onerror=ignore_extended_attributes)
+
+        #shutil.copytree(os.path.join(self.images_path, "train"), 
+        #                self.images_a_train_path,
+        #                ignore=shutil.ignore_patterns('.*'))
+
+        #print("Copy Created")
+
+        ## Read annotations as a dictionary
+        #with open(self.a_train_annotations_path) as f:
+        #    self.train_annotations = json.load(f)
+        #
+        #self.annotations = pd.DataFrame(self.train_annotations['annotations'])
+        #self.original_annotations = pd.DataFrame(self.train_annotations['annotations'])
+        #self.images = pd.DataFrame(self.train_annotations['images'])
+        #self.original_images = pd.DataFrame(self.train_annotations['images'])
 
 
     def dataset_stats(self):
@@ -104,12 +117,12 @@ class InstanceGenerator():
     def add_instance_image(self, img_row, instances_path, image, max_y):
         population = self.class_count_difference.keys().to_numpy()
         weights = self.class_count_difference.to_numpy()
-        choice = random.choices(population, weights=weights)[0]
+        choice = self.random.choices(population, weights=weights)[0]
 
         self.class_count_difference[choice] = self.class_count_difference[choice] - 1
 
         instances_path = os.path.join(instances_path, str(choice))
-        instance_path = os.path.join(instances_path, random.choice(os.listdir(instances_path)))
+        instance_path = os.path.join(instances_path, self.random.choice(os.listdir(instances_path)))
         instance = Image.open(instance_path)
                 
         instance_id = self.annotations['id'].max() + 1
@@ -119,8 +132,8 @@ class InstanceGenerator():
         iters_colliding = 0
 
         while True:
-            instance_x = random.randint(0, img_row['width'] - instance.width)
-            instance_y = random.randint(max_y - instance.height, img_row['height'] - instance.height)
+            instance_x = self.random.randint(0, img_row['width'] - instance.width)
+            instance_y = self.random.randint(max_y - instance.height, img_row['height'] - instance.height)
 
             instance_bbox = [
                                 instance_x,
@@ -206,7 +219,7 @@ class InstanceGenerator():
             self.update_class_count_difference()
 
             # Gets the number of instances that will be generated for each image
-            n_instances = random.randint(1, 10)
+            n_instances = self.random.randint(1, 10)
 
             for i in range(n_instances):
                 instance_metadata = self.add_instance_image(new_image_metadata, instances_path, image, max_y)
