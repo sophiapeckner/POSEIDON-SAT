@@ -9,6 +9,12 @@ from PIL import Image, ImageDraw
 from pathlib import Path
 
 
+SOURCE_DATASETS_TO_SPATIAL_RESOLUTION = {
+    'Airbus ship': 1.5, # Assuming the images come from the SPOT satellite
+    'FGSD': 1.025, # Selected a middle value between the range of spatial resolutions in FGSD (0.12 - 1.93 m/pixel)
+}
+
+
 class HorizontalBoundingBox:
     def __init__(self, xmin: int, ymin: int, xmax: int, ymax: int):
         self.xmin = xmin
@@ -69,7 +75,16 @@ class LabeledImage:
     def spatial_resolution(self):
         if self._spatial_resolution is not None:
             return self._spatial_resolution
-        return None # TODO: Dynamically implement this based on the source_dataset property
+        
+        # All images in ShipRSImageNet have at least the dataset source or the spatial resolution specified and we either know or can
+        # approximate the spatial resolution for each dataset source. Only time this will be None is if we are loading a copy of the
+        # dataset that has been processed and saved in a format that does not include all the metadata
+        
+        if self.source_dataset is not None:
+            return SOURCE_DATASETS_TO_SPATIAL_RESOLUTION[self.source_dataset]
+        else:
+            return None
+        
 
     def show(self):
         # Load the image
