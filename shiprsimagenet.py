@@ -1,6 +1,5 @@
 import os
 import json
-import glob
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 
@@ -105,21 +104,30 @@ class LabeledImage:
 
 class ShipRSImageNet:
     def __init__(self, root_path: str):
-        self.root_path = root_path
-        self.voc_root_path = os.path.join(root_path, 'VOC_Format')
-        self.is_original_dataset = os.path.exists(self.voc_root_path)
-        self.image_path = os.path.join(self.root_path, 'images') if not self.is_original_dataset else os.path.join(self.voc_root_path, 'JPEGImages')
+        voc_root_path = os.path.join(root_path, 'VOC_Format')
+        self.is_original_dataset = os.path.exists(voc_root_path)
+
+        self.voc_root_path = voc_root_path if self.is_original_dataset else None
+        self.image_path = os.path.join(voc_root_path, 'JPEGImages') if self.is_original_dataset else os.path.join(root_path, 'images')
+        self.coco_root_dir = os.path.join(root_path, 'COCO_Format') if self.is_original_dataset else root_path
+
+        self._coco_annotation_file_prefix = 'ShipRSImageNet_bbox_'
+        self._coco_annotation_file_suffix = '_level_3.json'
         self._coco_image_to_annotation_map = None
         self._coco_category_map = {}
 
 
     def get_image_set(self, image_set: str):
-        # Processed image sets are in COCO format only. Original dataset should parse VOC format since it has more metadata
+        # Processed image sets are in COCO format only. Original dataset should parse VOC format since it usually has more metadata
         return self._get_voc_image_set(image_set) if self.is_original_dataset else self._get_coco_image_set(image_set)
+    
+
+    def get_coco_annotation_file_name(self, image_set: str):
+        return f'{self._coco_annotation_file_prefix}{image_set}{self._coco_annotation_file_suffix}'
 
 
     def _get_coco_image_set(self, image_set: str):
-        annotation_file = os.path.join(self.root_path, f'ShipRSImageNet_bbox_{image_set}.json')
+        annotation_file = os.path.join(self.coco_root_dir, self.get_coco_annotation_file_name(image_set))
         with open(annotation_file, 'r') as f:
             annotations = json.load(f)
         
@@ -141,14 +149,14 @@ class ShipRSImageNet:
     def _get_coco_image(self, image_name: str):
         if not self._coco_image_to_annotation_map:
             self._coco_image_to_annotation_map = {}
-            metadata_files = glob.glob(os.path.join(self.root_path, '*.json'))
-            for metadata_file in metadata_files:
+            for image_set in ['val', 'train']:
+                metadata_file = os.path.join(self.coco_root_dir, self.get_coco_annotation_file_name(image_set))
                 with open(metadata_file, 'r') as f:
                     metadata = json.load(f)
-                    for idx, image in enumerate(metadata['images']):
-                        self._coco_image_to_annotation_map[image['file_name']] = (metadata_file, image['id'], idx)
-                    for category in metadata['categories']:
-                        self._coco_category_map[category['id']] = category['name']
+                for idx, image in enumerate(metadata['images']):
+                    self._coco_image_to_annotation_map[image['file_name']] = (metadata_file, image['id'], idx)
+                for category in metadata['categories']:
+                    self._coco_category_map[category['id']] = category['name']
         
         metadata_file, image_id, img_idx = self._coco_image_to_annotation_map[image_name]
         with open(metadata_file, 'r') as f:
