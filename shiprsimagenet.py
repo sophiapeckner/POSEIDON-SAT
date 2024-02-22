@@ -131,7 +131,7 @@ class ShipRSImageNet:
         with open(image_set_path, 'r') as f:
             image_names = f.read().splitlines()
 
-        return [self.get_image(image_name) for image_name in image_names]
+        return [self._get_voc_image(image_name) for image_name in image_names]
 
 
     def get_image(self, image_name: str):
@@ -181,35 +181,43 @@ class ShipRSImageNet:
 
 
     def _get_voc_image(self, image_name: str):
-        annotation_path = os.path.join(self.voc_root_path, 'Annotations', f'{Path(image_name).stem}.xml')
-        tree = ET.parse(annotation_path)
-        root = tree.getroot()
-        filename = root.find('filename').text
-        width = int(root.find('size').find('width').text)
-        height = int(root.find('size').find('height').text)
-        
-        source_dataset = root.find('source').find('dataset_source').text
-        spatial_resolution = root.find('Img_Resolution').text
+        try:
+            annotation_path = os.path.join(self.voc_root_path, 'Annotations', f'{Path(image_name).stem}.xml')
+            tree = ET.parse(annotation_path)
+            root = tree.getroot()
+            filename = root.find('filename').text
+            width = int(root.find('size').find('width').text)
+            height = int(root.find('size').find('height').text)
+            
+            source_dataset = root.find('source').find('dataset_source').text
+            spatial_resolution = root.find('Img_Resolution').text
 
-        labeled_objects: list[LabeledObject] = []
-        for obj in root.findall('object'):
-            name = obj.find('name').text
-            truncated = obj.find('truncted').text == '1'
-            difficult = obj.find('difficult').text == '1'
-            
-            bndbox = obj.find('bndbox')
-            bndbox = {child.tag: int(child.text) for child in bndbox}
-            
-            rotated_box_poly = obj.find('polygon')
-            rotated_box_poly = {child.tag: _parse_to_int(child.text) for child in rotated_box_poly}
-            
-            ship_location = obj.find('Ship_location').text
-            levels = tuple([int(obj.find(f'level_{i}').text) for i in range(4)])
+            labeled_objects: list[LabeledObject] = []
+            for obj in root.findall('object'):
+                name = obj.find('name').text
+                truncated = obj.find('truncted').text == '1'
+                difficult = obj.find('difficult').text == '1'
+                
+                bndbox = obj.find('bndbox')
+                bndbox = {child.tag: int(child.text) for child in bndbox}
+                
+                rotated_box_poly = obj.find('polygon')
+                rotated_box_poly = {child.tag: _parse_to_int(child.text) for child in rotated_box_poly}
+                
+                ship_location = obj.find('Ship_location').text
+                levels = tuple([int(obj.find(f'level_{i}').text) for i in range(4)])
 
-            labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box_poly), levels, ship_location)
-            labeled_objects.append(labeled_object)
-        
-        return LabeledImage(os.path.join(self.image_path, image_name), width, height, labeled_objects, source_dataset, spatial_resolution)
+                labeled_object = LabeledObject(filename, name, truncated, difficult, HorizontalBoundingBox(**bndbox), OrientedBoundingBox(**rotated_box_poly), levels, ship_location)
+                labeled_objects.append(labeled_object)
+            
+            return LabeledImage(os.path.join(self.image_path, image_name), width, height, labeled_objects, source_dataset, spatial_resolution)
+        except FileNotFoundError as err:
+            # This image only has a small part of a truncated ship. It makes for a good background image though, so we should still return something
+            # for this image rather than crash
+            if image_name == '1372__920_920.bmp':
+                return LabeledImage(os.path.join(self.image_path, image_name), 920, 920, [], 'xView', 0.3)
+            else:
+                raise err
 
 
 def _parse_to_int(s: str):

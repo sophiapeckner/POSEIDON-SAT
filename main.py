@@ -18,6 +18,7 @@ if __name__ == '__main__':
     # We'll instead normalize images based on the source and destination spatial resolutions
     #print('Normalizing images...')
     #normalize(original_dataset.root_path, "ShipRSImageNet_V1_Normalized", images_to_process, 'train_level_2')
+    #print()
 
     print('Compiling source images for generator...')
     extractor = InstanceExtractor(original_dataset)
