@@ -37,3 +37,5 @@ class InstanceExtractor():
 
         for idx, instance in enumerate(tqdm(instances, desc=f'Extracting non-truncated instances of {class_name}s from dataset...')):
             self._extract_instance(instance, idx, out_path)
+        
+        return out_path
