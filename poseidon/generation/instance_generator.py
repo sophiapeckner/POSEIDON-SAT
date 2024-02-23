@@ -12,6 +12,7 @@ from pathlib import Path
 from filecmp import dircmp
 
 from poseidon.utils.misc import ignore_extended_attributes, NpEncoder
+from shiprsimagenet import ShipRSImageNet, LabeledImage
 
 
 class InstanceGenerator():
@@ -21,13 +22,12 @@ class InstanceGenerator():
         self.instances_path = instances_path
         self.instances_resolution = instances_resolution
         
-        #TODO: Add option to allow resetting/reseeding the RNG
         self.random = Random(seed)
-        
-        self._instance_images = list(map(Image.open, Path(instances_path).iterdir()))
-        
-        # TODO: Factor source image parameters into function call
+        self._orig_random_state = self.random.getstate()
 
+        self._instance_images = list(map(Image.open, Path(instances_path).iterdir()))
+        self._repopulate_instance_random_select_pool()
+        
         ## Get base path from the dataset
         #super().__init__()
 
@@ -58,6 +58,35 @@ class InstanceGenerator():
         #self.original_annotations = pd.DataFrame(self.train_annotations['annotations'])
         #self.images = pd.DataFrame(self.train_annotations['images'])
         #self.original_images = pd.DataFrame(self.train_annotations['images'])
+    
+
+    def _repopulate_instance_random_select_pool(self):
+        self._instance_random_select_pool = list(range(len(self._instance_images)))
+        self.random.shuffle(self._instance_random_select_pool)
+    
+
+    def reset(self, new_seed: Optional[int] = None):
+        if new_seed is not None:
+            self.random.seed(new_seed)
+        else:
+            self.random.setstate(self._orig_random_state)
+
+        self._repopulate_instance_random_select_pool()
+    
+
+    def _select_random_instance(self):
+        if (len(self._instance_random_select_pool) == 0):
+            self._repopulate_instance_random_select_pool()
+
+        image = self._instance_images[self._instance_random_select_pool.pop()]
+
+        flip_horizontal, flip_vertical = self.random.choices([True, False], k=2)
+        if flip_horizontal:
+            image = image.transpose(Image.FLIP_LEFT_RIGHT)
+        if flip_vertical:
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)
+
+        return image
 
 
     def dataset_stats(self):
@@ -230,6 +259,12 @@ class InstanceGenerator():
 
         return
 
+
+    def _add_instances_to_image(self, source_image: LabeledImage, img_out_path: str, image_id: int, new_instance_class_id: int, num_instances: int, annotations: pd.DataFrame):
+        #TODO Implement based on orig impl
+        pass
+
+
     def balance(self, instances_path, max_tolerance=0.03):
         self.dataset_stats()
         # Iterate until the dataset has been balanced
@@ -256,3 +291,47 @@ class InstanceGenerator():
             iteration = iteration + 1
         
         return
+    
+
+    def augment(self, dataset: ShipRSImageNet, output_path: str, images_to_augment: 'list[str]', total_instances_to_add: int, min_instances_per_image: int, max_instances_per_image: int):
+        augmented_dataset = ShipRSImageNet(output_path)
+        
+        out_path = Path(output_path)
+        if out_path.exists():
+            shutil.rmtree(out_path)
+        out_path.mkdir(parents=True)
+        shutil.copytree(dataset.image_path, augmented_dataset.image_path)
+        annotation_file = dataset.get_coco_annotation_file_name('train')
+
+        with open(dataset.coco_root_dir / annotation_file) as f:
+            labels = json.load(f)
+
+        annotations = pd.DataFrame(labels['annotations'])
+        image_names_to_ids: dict[str, int] = {img['file_name']: img['id'] for img in labels['images']}
+        generated_instances_class_id: int = next(cat['id'] for cat in labels['categories'] if cat['name'] == self.instances_class)
+
+        instances_add_count = 0
+        instances_to_add_for_image: list[int] = []
+        while instances_add_count < total_instances_to_add:
+            num_instances_to_add = self.random.randint(min_instances_per_image, max_instances_per_image)
+            if num_instances_to_add + instances_add_count > total_instances_to_add:
+                num_instances_to_add = total_instances_to_add - instances_add_count
+
+            instances_to_add_for_image.append(num_instances_to_add)
+            instances_add_count += num_instances_to_add
+        
+        print(f"Adding {instances_add_count} instances to {len(instances_to_add_for_image)} images...")
+
+        images_pool = images_to_augment.copy()
+        self.random.shuffle(images_pool)
+        for idx, image_name in enumerate(tqdm(images_pool[:len(instances_to_add_for_image)], desc='Augmenting Images')):
+            num_instances_to_add = instances_to_add_for_image[idx]
+            image_id = image_names_to_ids[image_name]
+            annotations = self._add_instances_to_image(dataset.get_image(image_name), augmented_dataset.image_path, image_id, generated_instances_class_id, num_instances_to_add, annotations)
+        
+        labels['annotations'] = annotations.to_dict('records')
+        
+        with open(augmented_dataset.coco_root_dir / annotation_file, 'w') as f:
+            json.dump(labels, f)
+
+        return augmented_dataset
