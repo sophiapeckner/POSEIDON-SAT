@@ -119,20 +119,19 @@ class InstanceGenerator():
         self.class_count_difference = df_counts.max() - df_counts
         return
 
-    def box_collider(self, x1, x2):
+
+    def _test_box_collision(self, x1, x2):
         return(x1.x < x2.x + x2.w and
                x1.x + x1.w > x2.x and
                x1.y < x2.y + x2.h and
                x1.h + x1.y > x2.y)
 
 
-    def check_instance_collider(self, instance, bboxs):
+    def _is_instance_colliding(self, new_instance_bbox, bboxs):
         bboxs = np.array([i for i in bboxs])
         bboxs = pd.DataFrame(bboxs, columns=['x', 'y', 'w', 'h'])
-        window_has_collision = bboxs.apply(lambda x: self.box_collider(instance.iloc[0], x), axis=1)
-        if not window_has_collision.any():
-            return True
-        return False
+        window_has_collision = bboxs.apply(lambda x: self._test_box_collision(new_instance_bbox.iloc[0], x), axis=1)
+        return window_has_collision.any()
 
 
     # Get the maximun Y of the instances of a given image
@@ -178,9 +177,7 @@ class InstanceGenerator():
             if len(bboxs) == 0:
                 break
 
-            # The terminology has to be changed because is a litle bit ambiguous
-            # The function returns True if there is NO collisions
-            if self.check_instance_collider(instance_bbox_df, bboxs):
+            if not self._is_instance_colliding(instance_bbox_df, bboxs):
                 break
             iters_colliding += 1
             #if iters_colliding == 10:
@@ -260,9 +257,53 @@ class InstanceGenerator():
         return
 
 
-    def _add_instances_to_image(self, source_image: LabeledImage, img_out_path: str, image_id: int, new_instance_class_id: int, num_instances: int, annotations: pd.DataFrame):
-        #TODO Implement based on orig impl
-        pass
+    def _add_instances_to_image(self, source_image: LabeledImage, image_out_dir: str, image_id: int, new_instance_class_id: int, num_instances: int, annotations: pd.DataFrame) -> pd.DataFrame:
+        existing_instances_in_image = annotations[annotations['image_id'] == image_id]
+        next_free_id: int = annotations['id'].max() + 1
+        image = Image.open(source_image.file_path)
+
+        for iter_idx in range(num_instances):
+            instance = self._select_random_instance()
+            instance_id = next_free_id + iter_idx
+                    
+            # Just to debug the number of collisions in case of very long loop for a particular image
+            iters_colliding = 0
+
+            while True:
+                instance_x = self.random.randint(0, source_image.width - instance.width)
+                instance_y = self.random.randint(0, source_image.height - instance.height)
+
+                instance_bbox = [
+                                    instance_x,
+                                    instance_y,
+                                    instance.width,
+                                    instance.height
+                                ]
+
+                instance_bbox_df = pd.DataFrame([instance_bbox], columns=['x', 'y', 'w', 'h'])
+                bboxs = (existing_instances_in_image['bbox']).copy()
+
+                if len(bboxs) == 0:
+                    break
+
+                if not self._is_instance_colliding(instance_bbox_df, bboxs):
+                    break
+
+                iters_colliding += 1
+                #if iters_colliding == 10:
+                    #print(bboxs)
+                    #print(instance_bbox)
+                    #image.show()
+                
+            instance_area = instance.width * instance.height
+            instance_series = pd.Series([instance_id, image_id, instance_bbox, instance_area, new_instance_class_id],
+                                         index=['id', 'image_id', 'bbox', 'area', 'category_id'])
+
+            image.paste(instance, box=(instance_x, instance_y))
+            annotations = pd.concat(annotations, [instance_series], ignore_index=True, copy=False)
+
+        image.save(os.path.join(image_out_dir, os.path.basename(source_image.file_path)))
+        return annotations
 
 
     def balance(self, instances_path, max_tolerance=0.03):
