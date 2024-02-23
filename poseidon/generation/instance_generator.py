@@ -6,10 +6,13 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from random import Random
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 from shiprsimagenet import ShipRSImageNet, LabeledImage
+
+
+_INSTANCE_RESOLUTION = 0.3
 
 
 class InstanceGenerator():
@@ -40,7 +43,7 @@ class InstanceGenerator():
         self._repopulate_instance_random_select_pool()
 
 
-    def _select_random_instance(self):
+    def _select_random_instance(self, rescale_to_spatial_resolution: Optional[float] = None):
         if (len(self._instance_random_select_pool) == 0):
             self._repopulate_instance_random_select_pool()
 
@@ -52,7 +55,16 @@ class InstanceGenerator():
         if flip_vertical:
             image = image.transpose(Image.FLIP_TOP_BOTTOM)
 
-        return image
+        if rescale_to_spatial_resolution is None:
+            return image
+        
+        new_width = int(image.width * self.instances_resolution / rescale_to_spatial_resolution)
+        new_height = int(image.height * self.instances_resolution / rescale_to_spatial_resolution)
+        
+        if new_width == 0 or new_height == 0:
+            raise ValueError(f"Rescaling randomly selected instance to {rescale_to_spatial_resolution} m/pixel results in an image with a 0 width or height: cannot reliably provide rescaled instance for desired resolution")
+
+        return image.resize((new_width, new_height))
 
 
     def _add_instances_to_image(self, source_image: LabeledImage, image_out_dir: str, image_id: int, new_instance_class_id: int, num_instances: int, annotations: pd.DataFrame) -> pd.DataFrame:
@@ -61,7 +73,7 @@ class InstanceGenerator():
         image = Image.open(source_image.file_path)
 
         for iter_idx in range(num_instances):
-            instance = self._select_random_instance()
+            instance = self._select_random_instance(source_image.spatial_resolution)
             instance_id = next_free_id + iter_idx
                     
             # Just to debug the number of collisions in case of very long loop for a particular image
