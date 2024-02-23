@@ -105,6 +105,9 @@ class InstanceGenerator():
 
 
     def augment(self, dataset: ShipRSImageNet, output_path: str, images_to_augment: 'list[str]', total_instances_to_add: int, min_instances_per_image: int, max_instances_per_image: int):
+        if max_instances_per_image * len(images_to_augment) < total_instances_to_add:
+            raise ValueError(f"Cannot add {total_instances_to_add} instances to {len(images_to_augment)} images when the maximum number of instances per image is {max_instances_per_image}")
+
         augmented_dataset = ShipRSImageNet(output_path)
         
         out_path = Path(output_path)
@@ -122,20 +125,27 @@ class InstanceGenerator():
         generated_instances_class_id: int = next(cat['id'] for cat in labels['categories'] if cat['name'] == self.instances_class)
 
         instances_add_count = 0
-        instances_to_add_for_image: list[int] = []
+        instances_to_add_for_image = [None] * len(images_to_augment)
+        image_idx = 0
         while instances_add_count < total_instances_to_add:
-            num_instances_to_add = self.random.randint(min_instances_per_image, max_instances_per_image)
+            current_instances_to_add_for_image = instances_to_add_for_image[image_idx] or 0
+
+            num_instances_to_add = self.random.randint(min_instances_per_image, max_instances_per_image - current_instances_to_add_for_image)
             if num_instances_to_add + instances_add_count > total_instances_to_add:
                 num_instances_to_add = total_instances_to_add - instances_add_count
 
-            instances_to_add_for_image.append(num_instances_to_add)
+            instances_to_add_for_image[image_idx] = num_instances_to_add + current_instances_to_add_for_image
             instances_add_count += num_instances_to_add
+
+            image_idx += 1
+            if image_idx >= len(instances_to_add_for_image):
+                image_idx = 0
+
+        instances_to_add_for_image: list[int] = [i for i in instances_to_add_for_image if i is not None]
         
         print(f"Adding {instances_add_count} instances to {len(instances_to_add_for_image)} images...")
 
-        images_pool = images_to_augment.copy()
-        self.random.shuffle(images_pool)
-        for idx, image_name in enumerate(tqdm(images_pool[:len(instances_to_add_for_image)], desc='Augmenting Images')):
+        for idx, image_name in enumerate(tqdm(images_to_augment[:len(instances_to_add_for_image)], desc='Augmenting Images')):
             num_instances_to_add = instances_to_add_for_image[idx]
             image_id = image_names_to_ids[image_name]
             annotations = self._add_instances_to_image(dataset.get_image(image_name), augmented_dataset.image_path, image_id, generated_instances_class_id, num_instances_to_add, annotations)

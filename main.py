@@ -25,10 +25,20 @@ if __name__ == '__main__':
     extractor.extract_instances(CLASS_TO_AUGMENT, 'fishing_vessel_instances')
     print()
 
-    #print(f'Augmenting {len(images_to_process)} images...')
-    #generator = COCOInstanceGenerator()
-    #generator.balance('/Users/pabloruizponce/Vainas/POSEIDON/poseidon/outputs')
-    #print()
+    # See notebook for selection of these args
+    target_avg_of_instances_per_image = 3
+    total_instances_to_add = len(images_to_process) * target_avg_of_instances_per_image
+    min_instances_per_image = 1
+    max_instances_per_image = 5
+
+    print(f'Augmenting images...')
+    generator = InstanceGenerator()
+    generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented", images_to_process,
+                      total_instances_to_add,
+                      min_instances_per_image,
+                      max_instances_per_image,
+                     ) 
+    print()
 
     #conversor = COCO2YOLO()
     #conversor.convert("/Users/pabloruizponce/Vainas/SDSYOLO", "SDSYOLO")
