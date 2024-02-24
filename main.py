@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     print('Compiling source images for generator...')
     extractor = InstanceExtractor(original_dataset)
-    #extractor.extract_instances(CLASS_TO_AUGMENT, 'fishing_vessel_instances')
+    extractor.extract_instances(CLASS_TO_AUGMENT, 'fishing_vessel_instances')
     print()
 
     # See notebook for selection of these args
