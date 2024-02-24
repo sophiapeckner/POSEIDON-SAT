@@ -35,7 +35,7 @@ class InstanceExtractor():
 
         instances = [ instance for image in self.images.values() for instance in image.objects if instance.name == class_name and not instance.truncated ]
 
-        for idx, instance in enumerate(tqdm(instances, desc=f'Extracting non-truncated instances of {class_name}s from dataset...')):
+        for idx, instance in enumerate(tqdm(instances, desc=f'Extracting non-truncated instances of {class_name}s from dataset')):
             self._extract_instance(instance, idx, out_path)
         
         return out_path
