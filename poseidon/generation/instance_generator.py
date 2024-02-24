@@ -110,7 +110,7 @@ class InstanceGenerator():
                                          index=['id', 'image_id', 'bbox', 'area', 'category_id'])
 
             image.paste(instance, box=(instance_x, instance_y))
-            annotations = pd.concat(annotations, [instance_series], ignore_index=True, copy=False)
+            annotations = pd.concat([annotations, instance_series], ignore_index=True, copy=False)
 
         image.save(os.path.join(image_out_dir, os.path.basename(source_image.file_path)))
         return annotations
@@ -168,8 +168,9 @@ class InstanceGenerator():
         
         print(f"Adding {instances_add_count} instances to {len(instances_to_add_for_image)} images...")
 
-        for idx, image_name in enumerate(tqdm(images_to_augment[:len(instances_to_add_for_image)], desc='Augmenting Images')):
+        for idx, image_name in enumerate(tqdm(images_to_augment[:len(instances_to_add_for_image)], desc='Adding instances')):
             num_instances_to_add = instances_to_add_for_image[idx]
+            # TODO: If an image does not exist in the mapping, we need to give it a new ID - The image exists in the dataset, but has no labels
             image_id = image_names_to_ids[image_name]
             annotations = self._add_instances_to_image(dataset.get_image(image_name), augmented_dataset.image_path, image_id, generated_instances_class_id, num_instances_to_add, annotations)
         
