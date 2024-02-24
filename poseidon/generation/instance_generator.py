@@ -17,7 +17,7 @@ _INSTANCE_RESOLUTION = 0.3
 
 class InstanceGenerator():
 
-    def __init__(self, instances_class_name: str, instances_path: str, instances_resolution: float, seed: Optional[int] = None):
+    def __init__(self, instances_class_name: str, instances_path: str, instances_resolution: float = _INSTANCE_RESOLUTION, seed: Optional[int] = None):
         self.instances_class = instances_class_name
         self.instances_path = instances_path
         self.instances_resolution = instances_resolution
@@ -129,7 +129,7 @@ class InstanceGenerator():
         shutil.copytree(dataset.image_path, augmented_dataset.image_path)
         annotation_file = dataset.get_coco_annotation_file_name('train')
 
-        with open(dataset.coco_root_dir / annotation_file) as f:
+        with open(os.path.join(dataset.coco_root_dir, annotation_file)) as f:
             labels = json.load(f)
 
         annotations = pd.DataFrame(labels['annotations'])
@@ -142,7 +142,17 @@ class InstanceGenerator():
         while instances_add_count < total_instances_to_add:
             current_instances_to_add_for_image = instances_to_add_for_image[image_idx] or 0
 
-            num_instances_to_add = self.random.randint(min_instances_per_image, max_instances_per_image - current_instances_to_add_for_image)
+            # If assigning a number of new instances to each image does not result in the desired total number of instances to add, we'll need to loop through the images again
+            # and at that point, we need to drop the minimum number of additional instances to add to 1 so that we are at least adding something while avoiding adding more than the maximum
+            # number of instances for a single image.
+            max_instances_to_add = max_instances_per_image - current_instances_to_add_for_image
+            min_instances_to_add = min_instances_per_image if instances_to_add_for_image[image_idx] is not None else 1  
+            if max_instances_to_add <= 0:
+                # This image already has the maximum number of instances added
+                image_idx += 1
+                continue
+
+            num_instances_to_add = self.random.randint(min_instances_to_add, max_instances_to_add)
             if num_instances_to_add + instances_add_count > total_instances_to_add:
                 num_instances_to_add = total_instances_to_add - instances_add_count
 
@@ -154,6 +164,7 @@ class InstanceGenerator():
                 image_idx = 0
 
         instances_to_add_for_image: list[int] = [i for i in instances_to_add_for_image if i is not None]
+        self.random.shuffle(instances_to_add_for_image) # Ensures that images listed first in the augment list do not get more instances than those listed later due to how the instances are assigned above
         
         print(f"Adding {instances_add_count} instances to {len(instances_to_add_for_image)} images...")
 

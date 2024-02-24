@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     print('Compiling source images for generator...')
     extractor = InstanceExtractor(original_dataset)
-    extractor.extract_instances(CLASS_TO_AUGMENT, 'fishing_vessel_instances')
+    #extractor.extract_instances(CLASS_TO_AUGMENT, 'fishing_vessel_instances')
     print()
 
     # See notebook for selection of these args
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     max_instances_per_image = 5
 
     print(f'Augmenting images...')
-    generator = InstanceGenerator()
+    generator = InstanceGenerator('Fishing Vessel', 'fishing_vessel_instances')
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented", images_to_process,
                       total_instances_to_add,
                       min_instances_per_image,
