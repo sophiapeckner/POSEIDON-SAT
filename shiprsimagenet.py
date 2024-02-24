@@ -1,4 +1,5 @@
 import os
+import math
 import json
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
@@ -199,6 +200,8 @@ class ShipRSImageNet:
             
             source_dataset = root.find('source').find('dataset_source').text
             spatial_resolution = root.find('Img_Resolution').text
+            spatial_resolution = float(spatial_resolution if spatial_resolution is not None else 'nan')
+            spatial_resolution = spatial_resolution if not math.isnan(spatial_resolution) else None
 
             labeled_objects: list[LabeledObject] = []
             for obj in root.findall('object'):
