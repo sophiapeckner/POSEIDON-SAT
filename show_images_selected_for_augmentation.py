@@ -9,20 +9,20 @@ def show_image(dataset: ShipRSImageNet, image_file):
 if __name__ == '__main__':
     """
     Usage:
-    python show_images_selected_for_augmentation.py [image_file] [dataset_path]
+    python show_images_selected_for_augmentation.py [dataset_path] [image_file] 
     
     If no image file is specified, it will show all the images in the 'selected_for_augmentation.txt' file.
     
     If no dataset path is specified, it will use the default 'ShipRSImageNet_V1' dataset.
     """
     
-    if len(sys.argv) > 2:
-        dataset = ShipRSImageNet(sys.argv[2])
+    if len(sys.argv) > 1:
+        dataset = ShipRSImageNet(sys.argv[1])
     else:
         dataset = ShipRSImageNet('ShipRSImageNet_V1')
 
-    if len(sys.argv) > 1:
-        show_image(dataset, sys.argv[1])
+    if len(sys.argv) > 2:
+        show_image(dataset, sys.argv[2])
         sys.exit(0)
     
     with open('selected_for_augmentation.txt', 'r') as f:

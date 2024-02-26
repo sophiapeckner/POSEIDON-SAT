@@ -32,4 +32,6 @@ Additionally, the augmentation tool requires that the list of images to be augme
 
 After the `selected_for_augmentation.txt` file is created, the ShipRSImageNet dataset is extracted to the root of the repository, and dependencies are installed (see `requirements.txt` or `requirements-frozen.txt`), the code can be run by executing the `main.py` script in the root of the repository. To run this code using the same package versions that were used during the creation of this repository, use the `requirements-frozen.txt` file in a Python 3.8.10 environment on Linux.
 
+To view the augmented images, you can use the `show_images_selected_for_augmentation.py` script and pass the path to the augmented images dataset directory. Ex. `python show_images_selected_for_augmentation.py augmented_image_folder/`
+
 TODO: Add frozen requirements file after finishing everything
