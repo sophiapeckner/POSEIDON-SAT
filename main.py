@@ -1,7 +1,6 @@
 from poseidon.generation.instance_generator import InstanceGenerator
 from poseidon.extraction.instance_extractor import InstanceExtractor
 from poseidon.utils.normalization import normalize
-from poseidon.utils.coco2yolo import COCO2YOLO
 from shiprsimagenet import ShipRSImageNet
 
 
@@ -13,6 +12,9 @@ if __name__ == '__main__':
 
     with open('selected_for_augmentation.txt', 'r') as f:
         images_to_process = f.read().splitlines()
+    
+    with open('selected_for_augmentation_matched_resolution.txt', 'r') as f:
+        matched_resolution_images_to_process = f.read().splitlines()
 
     # The original normalization method described by POSEIDON is not a good fit for the ShipRSImageNet dataset
     # We'll instead normalize images based on the source and destination spatial resolutions
@@ -31,11 +33,17 @@ if __name__ == '__main__':
     min_instances_per_image = 1
     max_instances_per_image = 5
 
-    print(f'Augmenting images...')
+    print('Augmenting images...')
     generator = InstanceGenerator('Fishing Vessel', 'fishing_vessel_instances')
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented", images_to_process,
                       total_instances_to_add,
                       min_instances_per_image,
                       max_instances_per_image,
                      ) 
+    print('Augmenting images with matched resolution to extracted instances...')
+    generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MatchedRes", matched_resolution_images_to_process,
+                      total_instances_to_add,
+                      min_instances_per_image,
+                      max_instances_per_image,
+                     )
     print()
