@@ -109,11 +109,11 @@ class InstanceGenerator():
                     #image.show()
                 
             instance_area = instance.width * instance.height
-            instance_series = pd.Series([instance_id, image_id, instance_bbox, instance_area, new_instance_class_id],
-                                         index=['id', 'image_id', 'bbox', 'area', 'category_id'])
+            instance_series = pd.Series([instance_id, image_id, instance_bbox, instance_area, new_instance_class_id, 0, 0, []],
+                                         index=['id', 'image_id', 'bbox', 'area', 'category_id', 'ignore', 'iscrowd', 'segmentation'])
 
             image.paste(instance, box=(instance_x, instance_y))
-            annotations = pd.concat([annotations, instance_series], ignore_index=True, copy=False)
+            annotations = pd.concat([annotations, pd.DataFrame([instance_series])], ignore_index=True, copy=False)
 
         image.save(os.path.join(image_out_dir, os.path.basename(source_image.file_path)))
         return annotations
@@ -132,8 +132,8 @@ class InstanceGenerator():
             shutil.rmtree(out_path)
         out_path.mkdir(parents=True)
         shutil.copytree(dataset.image_path, augmented_dataset.image_path)
-        annotation_file = dataset.get_coco_annotation_file_name('train')
 
+        annotation_file = dataset.get_coco_annotation_file_name('train')
         with open(os.path.join(dataset.coco_root_dir, annotation_file)) as f:
             labels = json.load(f)
 
