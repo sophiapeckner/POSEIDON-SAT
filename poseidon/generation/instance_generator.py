@@ -62,7 +62,10 @@ class InstanceGenerator():
         new_height = int(image.height * self.instances_resolution / rescale_to_spatial_resolution)
         
         if new_width == 0 or new_height == 0:
-            raise ValueError(f"Rescaling randomly selected instance to {rescale_to_spatial_resolution} m/pixel results in an image with a 0 width or height: cannot reliably provide rescaled instance for desired resolution")
+            # Since all our extracted instances are at the same resolution, there's no sense in trying again for that image. Bail out.
+            # If we had different resolutions, we could just try again with a different instance or use separate buckets for low/high resolution instances.
+            # Not necessary in this specific case, so we'll just raise an error.
+            raise ValueError(f"Rescaling randomly selected instance to {rescale_to_spatial_resolution} m/pixel resolution results in an instance with a 0 width or height: cannot provide instances for desired resolution")
 
         return image.resize((new_width, new_height))
 
@@ -169,9 +172,14 @@ class InstanceGenerator():
         print(f"Adding {instances_add_count} instances to {len(instances_to_add_for_image)} images...")
 
         for idx, image_name in enumerate(tqdm(images_to_augment[:len(instances_to_add_for_image)], desc='Adding instances')):
+            if image_name not in image_names_to_ids:
+                new_image_meta = _create_new_image_metadata(dataset, image_name, labels['images'])
+                image_id = new_image_meta['id']
+                labels['images'].append(new_image_meta)
+            else:
+                image_id = image_names_to_ids[image_name]
+
             num_instances_to_add = instances_to_add_for_image[idx]
-            # TODO: If an image does not exist in the mapping, we need to give it a new ID - The image exists in the dataset, but has no labels
-            image_id = image_names_to_ids[image_name]
             annotations = self._add_instances_to_image(dataset.get_image(image_name), augmented_dataset.image_path, image_id, generated_instances_class_id, num_instances_to_add, annotations)
         
         labels['annotations'] = annotations.to_dict('records')
@@ -180,6 +188,17 @@ class InstanceGenerator():
             json.dump(labels, f)
 
         return augmented_dataset
+
+
+def _create_new_image_metadata(dataset: ShipRSImageNet, image_name: str, image_metadata: 'list[dict[str,str|int]]'):
+    img = Image.open(dataset.get_image(image_name).file_path)
+    new_id = max([i['id'] for i in image_metadata], default=0) + 1
+    return {
+        'id': new_id,
+        'file_name': image_name,
+        'width': img.width,
+        'height': img.height
+    }
 
 
 def _test_box_collision(x1, x2):
