@@ -44,7 +44,7 @@ if __name__ == '__main__':
                      ) 
     
     total_instances_to_add = len(matched_resolution_images_to_process) * target_avg_of_instances_per_image
-    print('Augmenting images with matched resolution to extracted instances...')
+    print('Augmenting images with resolution matched to extracted instances...')
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MatchedRes", matched_resolution_images_to_process,
                       total_instances_to_add,
                       min_instances_per_image,
