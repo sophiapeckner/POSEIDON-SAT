@@ -37,6 +37,7 @@ class InstanceGenerator():
     def reset(self, new_seed: Optional[int] = None):
         if new_seed is not None:
             self.random.seed(new_seed)
+            self._orig_random_state = self.random.getstate()
         else:
             self.random.setstate(self._orig_random_state)
 
@@ -122,6 +123,8 @@ class InstanceGenerator():
     def augment(self, dataset: ShipRSImageNet, output_path: str, images_to_augment: 'list[str]', total_instances_to_add: int, min_instances_per_image: int, max_instances_per_image: int):
         if max_instances_per_image * len(images_to_augment) < total_instances_to_add:
             raise ValueError(f"Cannot add {total_instances_to_add} instances to {len(images_to_augment)} images when the maximum number of instances per image is {max_instances_per_image}")
+        
+        self._repopulate_instance_random_select_pool()
 
         augmented_dataset = ShipRSImageNet(output_path)
         
