@@ -73,7 +73,7 @@ class InstanceGenerator():
     def _add_instances_to_image(self, source_image: LabeledImage, image_out_dir: str, image_id: int, new_instance_class_id: int, num_instances: int, annotations: pd.DataFrame) -> pd.DataFrame:
         existing_instances_in_image = annotations[annotations['image_id'] == image_id]
         next_free_id: int = annotations['id'].max() + 1
-        image = Image.open(source_image.file_path)
+        image = Image.open(source_image.file_path).convert('RGBA')
 
         for iter_idx in range(num_instances):
             instance = self._select_random_instance(source_image.spatial_resolution)
