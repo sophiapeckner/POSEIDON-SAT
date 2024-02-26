@@ -39,10 +39,3 @@ if __name__ == '__main__':
                       max_instances_per_image,
                      ) 
     print()
-
-    #conversor = COCO2YOLO()
-    #conversor.convert("/Users/pabloruizponce/Vainas/SDSYOLO", "SDSYOLO")
-
-    #conversor = COCO2YOLO(augmented=True)
-    #conversor.convert("/Users/pabloruizponce/Vainas/SDSYOLOAugmented", "SDSYOLOAugmented")
-
