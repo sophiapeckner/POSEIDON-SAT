@@ -51,7 +51,7 @@ class OrientedBoundingBox:
 
 
 class LabeledObject:
-    def __init__(self, image_name: str, name: str, truncated: 'Optional[bool]', difficult: 'Optional[bool]', bndbox: HorizontalBoundingBox, rotated_box: OrientedBoundingBox, levels: 'Optional[tuple[int, int, int, int]]', location: 'Optional[bool]'):
+    def __init__(self, image_name: str, name: str, truncated: Optional[bool], difficult: Optional[bool], bndbox: HorizontalBoundingBox, rotated_box: Optional[OrientedBoundingBox], levels: 'Optional[tuple[int, int, int, int]]', location: Optional[bool]):
         self.image_name = image_name
         self.name = name
         self.truncated = truncated
@@ -63,7 +63,7 @@ class LabeledObject:
 
 
 class LabeledImage:
-    def __init__(self, path: str, width: int, height: int, objects: 'list[LabeledObject]', source_dataset: 'Optional[str]' = None, spatial_resolution: 'Optional[float]' = None):
+    def __init__(self, path: str, width: int, height: int, objects: 'list[LabeledObject]', source_dataset: Optional[str] = None, spatial_resolution: Optional[float] = None):
         self.file_path = path
         self.width = width
         self.height = height
@@ -95,7 +95,8 @@ class LabeledImage:
         for obj in self.objects:
             rotated_box = obj.rotated_bndbox
             imgDraw.polygon(obj.bndbox.to_polygon(), outline='red', width=3)
-            imgDraw.polygon(rotated_box.to_polygon(), outline='lime', width=5)
+            if rotated_box:
+                imgDraw.polygon(rotated_box.to_polygon(), outline='lime', width=5)
 
         # Display the image
         plt.imshow(img)
@@ -152,12 +153,15 @@ class ShipRSImageNet:
             self._coco_image_to_annotation_map = {}
             for image_set in ['val', 'train']:
                 metadata_file = os.path.join(self.coco_root_dir, self.get_coco_annotation_file_name(image_set))
-                with open(metadata_file, 'r') as f:
-                    metadata = json.load(f)
-                for idx, image in enumerate(metadata['images']):
-                    self._coco_image_to_annotation_map[image['file_name']] = (metadata_file, image['id'], idx)
-                for category in metadata['categories']:
-                    self._coco_category_map[category['id']] = category['name']
+                try:
+                    with open(metadata_file, 'r') as f:
+                        metadata = json.load(f)
+                    for idx, image in enumerate(metadata['images']):
+                        self._coco_image_to_annotation_map[image['file_name']] = (metadata_file, image['id'], idx)
+                    for category in metadata['categories']:
+                        self._coco_category_map[category['id']] = category['name']
+                except FileNotFoundError:
+                    continue
         
         metadata_file, image_id, img_idx = self._coco_image_to_annotation_map[image_name]
         with open(metadata_file, 'r') as f:
@@ -174,7 +178,7 @@ class ShipRSImageNet:
                 ymin=annotation['bbox'][1],
                 xmax=annotation['bbox'][0] + annotation['bbox'][2],
                 ymax=annotation['bbox'][1] + annotation['bbox'][3])
-            rotated_box = OrientedBoundingBox(*annotation['segmentation'][0])
+            rotated_box = OrientedBoundingBox(*annotation['segmentation'][0]) if len(annotation['segmentation']) > 1 else None
             labeled_object = LabeledObject(
                 image_name=image_metadata['file_name'],
                 name=category_name,
