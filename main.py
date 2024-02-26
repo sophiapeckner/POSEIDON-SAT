@@ -20,7 +20,7 @@ if __name__ == '__main__':
     #normalize(original_dataset.root_path, "ShipRSImageNet_V1_Normalized", images_to_process, 'train_level_2')
     #print()
 
-    print('Compiling source images for generator...')
+    print('Compiling source instances for generator...')
     extractor = InstanceExtractor(original_dataset)
     extractor.extract_instances(CLASS_TO_AUGMENT, 'fishing_vessel_instances')
     print()

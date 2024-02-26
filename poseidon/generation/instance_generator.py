@@ -125,6 +125,8 @@ class InstanceGenerator():
 
         augmented_dataset = ShipRSImageNet(output_path)
         
+        print(f"Copying original dataset to {output_path}...")
+
         out_path = Path(output_path)
         if out_path.exists():
             shutil.rmtree(out_path)
@@ -184,7 +186,7 @@ class InstanceGenerator():
         
         labels['annotations'] = annotations.to_dict('records')
         
-        with open(augmented_dataset.coco_root_dir / annotation_file, 'w') as f:
+        with open(os.path.join(augmented_dataset.coco_root_dir, annotation_file), 'w') as f:
             json.dump(labels, f)
 
         return augmented_dataset
