@@ -34,19 +34,39 @@ if __name__ == '__main__':
     total_instances_to_add = len(images_to_process) * target_avg_of_instances_per_image
     min_instances_per_image = 1
     max_instances_per_image = 5
+    
+    # Save for later - This is how many instances we want to add to the dataset to better balance the fishing vessel class
+    target_total_classes_to_add = total_instances_to_add
 
     print('Augmenting images...')
+
     generator = InstanceGenerator('Fishing Vessel', 'fishing_vessel_instances', seed=SEED)
+
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented", images_to_process,
                       total_instances_to_add,
                       min_instances_per_image,
                       max_instances_per_image,
                      ) 
     
+    # Reset random state for reproducibility when only running one of these augmentation/generation jobs
+    generator.reset()
+    
+    # Test augmentation with same average number of instances per image but with images that have resolution matched to the extracted instances
+    # This will have fewer instances added total, however.
     total_instances_to_add = len(matched_resolution_images_to_process) * target_avg_of_instances_per_image
     print('Augmenting images with resolution matched to extracted instances...')
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MatchedRes", matched_resolution_images_to_process,
                       total_instances_to_add,
+                      min_instances_per_image,
+                      max_instances_per_image,
+                     )
+    
+    generator.reset()
+    
+    # Test augmentation with same total number of new instances with mixed resolution images, but only use images that have resolution matched to the extracted instances resolution.
+    # This will have more instances per image on average, however, compared to the previous two results
+    generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MixedRes_MoreInstances", matched_resolution_images_to_process,
+                      target_total_classes_to_add,
                       min_instances_per_image,
                       max_instances_per_image,
                      )
