@@ -6,6 +6,8 @@ from shiprsimagenet import ShipRSImageNet
 
 CLASS_TO_AUGMENT = 'Fishing Vessel'
 
+SEED = 3030292994
+
 
 if __name__ == '__main__':
     original_dataset = ShipRSImageNet('ShipRSImageNet_V1')
@@ -34,12 +36,14 @@ if __name__ == '__main__':
     max_instances_per_image = 5
 
     print('Augmenting images...')
-    generator = InstanceGenerator('Fishing Vessel', 'fishing_vessel_instances')
+    generator = InstanceGenerator('Fishing Vessel', 'fishing_vessel_instances', seed=SEED)
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented", images_to_process,
                       total_instances_to_add,
                       min_instances_per_image,
                       max_instances_per_image,
                      ) 
+    
+    total_instances_to_add = len(matched_resolution_images_to_process) * target_avg_of_instances_per_image
     print('Augmenting images with matched resolution to extracted instances...')
     generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MatchedRes", matched_resolution_images_to_process,
                       total_instances_to_add,
