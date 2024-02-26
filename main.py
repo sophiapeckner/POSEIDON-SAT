@@ -65,7 +65,7 @@ if __name__ == '__main__':
     
     # Test augmentation with same total number of new instances with mixed resolution images, but only use images that have resolution matched to the extracted instances resolution.
     # This will have more instances per image on average, however, compared to the previous two results
-    generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MixedRes_MoreInstances", matched_resolution_images_to_process,
+    generator.augment(original_dataset, "ShipRSImageNet_V1_Augmented_MatchedRes_MoreInstances", matched_resolution_images_to_process,
                       target_total_classes_to_add,
                       min_instances_per_image,
                       max_instances_per_image,
