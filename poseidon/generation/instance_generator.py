@@ -25,7 +25,7 @@ class InstanceGenerator():
         self.random = Random(seed)
         self._orig_random_state = self.random.getstate()
 
-        self._instance_images = list(map(Image.open, Path(instances_path).iterdir()))
+        self._instance_images = list(map(lambda path: Image.open(path).convert('RGBA'), Path(instances_path).iterdir()))
         self._repopulate_instance_random_select_pool()
 
 
@@ -112,7 +112,7 @@ class InstanceGenerator():
             instance_series = pd.Series([instance_id, image_id, instance_bbox, instance_area, new_instance_class_id, 0, 0, []],
                                          index=['id', 'image_id', 'bbox', 'area', 'category_id', 'ignore', 'iscrowd', 'segmentation'])
 
-            image.paste(instance, box=(instance_x, instance_y))
+            image.paste(instance, box=(instance_x, instance_y), mask=instance)
             annotations = pd.concat([annotations, pd.DataFrame([instance_series])], ignore_index=True, copy=False)
 
         image.save(os.path.join(image_out_dir, os.path.basename(source_image.file_path)))
