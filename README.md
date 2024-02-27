@@ -26,15 +26,21 @@ Other python scripts in the root of the repository are used to explore the datas
 
 All code in this repository expects the ShipRSImageNet dataset to be extracted to the root of the repository, such that the `ShipRSImageNet_V1` folder is a sibling to the `poseidon` folder
 
-## Running the code
+## Running the Augmentation Code
 
 Additionally, the augmentation tool requires that the list of images to be augmented is in a file called `selected_for_augmentation.txt` in the root of the repository. This file should contain the file names of the images to be augmented, one per line. See the [dataset exploration notebook](dataset_exploration.ipynb) for information on how the images in this repository's [`selected_for_augmentation.txt`](selected_for_augmentation.txt) file were selected from the ShipRSImageNet dataset, the tools and techniques used to build this list of images to augment, and for information on factors that were considered in the selection of augmentation candidate images.
 
-After the `selected_for_augmentation.txt` file is created, the ShipRSImageNet dataset is extracted to the root of the repository, and dependencies are installed (see `requirements.txt` or `requirements-frozen.txt` - It is recommended to install pytorch and torchvision before anything else in requirements files to avoid CUDA issues), the code can be run by executing the `main.py` script in the root of the repository. To run this code using the same package versions that were used during the creation of this repository, use the `requirements-frozen.txt` file in a Python 3.8.10 environment on Linux.
+After the `selected_for_augmentation.txt` file is created, the ShipRSImageNet dataset is extracted to the root of the repository, and dependencies are installed (see `requirements.txt` or `requirements-frozen.txt`), the code can be run by executing the `main.py` script in the root of the repository. To run this code using the same package versions that were used during the creation of this repository, use the `requirements-frozen.txt` file in a Python 3.8.10 environment on Linux.
 
 To view the augmented images, you can use the `show_images_selected_for_augmentation.py` script and pass the path to the augmented images dataset directory. Ex. `python show_images_selected_for_augmentation.py augmented_image_folder/`
 
 TODO: Add frozen requirements file after finishing everything
+
+## Evaluating Augmentation Impacts on YOLOv8
+
+This repository includes dataset configs for the original ShipRSImageNet dataset, as well as augmented versions of the dataset in the `yolo` directory. These are used to train and evaluate the YOLOv8 model on the original and augmented datasets. These dataset configs focus on testing a reduced number of classes. Most significantly is grouping together the warship classes since there are so many of them in the dataset, and the augmentation examples in this repository focus on augmenting the fishing vessel class.
+
+A `train.py` and `test.py` script are included in the root of this repository for the purpose of evaluating the impact of the augmentation on the YOLOv8n model's performance on the ShipRSImageNet dataset. These scripts take a parameter that indicates which dataset to use for a given run, as well as other parameters that will be passed on to YOLO. Results will be saved in the usual directories that are created by YOLOv8.
 
 ## License
 

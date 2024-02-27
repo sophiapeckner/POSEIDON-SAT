@@ -3,4 +3,11 @@ pandas
 pillow
 tqdm
 matplotlib
+
+# Dependencies used only for evaluating augmented datasets in model training.
+# ========================================================================
+# It is recommended to install pytorch and torchvision before anything in
+# this file if you want to perform evaluation on augmented datasets to avoid
+# potential CUDA version issues. If you do not want to perform evaluation
+# on augmented datasets, you can remove the lines below
 ultralytics
