@@ -17,56 +17,16 @@ val: # val images (relative to 'path')  4952 images
 #  - images/test
 
 names:
-  0: 'Other Warship'
-  1: 'Atago DD'
-  2: 'Container Ship'
-  3: 'Cargo'
-  4: 'Test Ship'
-  5: 'Sanantonio AS'
-  6: 'Other Aircraft Carrier'
-  7: 'Other Destroyer'
-  8: 'Dock'
-  9: 'AOE'
-  10: 'Masyuu AS'
-  11: 'Perry FF'
-  12: 'Other Ship'
-  13: 'Other Auxiliary Ship'
-  14: 'Austin LL'
-  15: 'Ticonderoga'
-  16: 'Arleigh Burke DD'
-  17: 'Hovercraft'
-  18: 'Patrol'
-  19: 'Hatsuyuki DD'
-  20: 'EPF'
-  21: 'Oil Tanker'
-  22: 'Other Frigate'
-  23: 'YuDeng LL'
-  24: 'RoRo'
-  25: 'Tugboat'
-  26: 'Sailboat'
-  27: 'Barge'
-  28: 'Motorboat'
-  29: 'Submarine'
-  30: 'YuDao LL'
-  31: 'Osumi LL'
-  32: 'Commander'
-  33: 'Hyuga DD'
-  34: 'Asagiri DD'
-  35: 'Fishing Vessel'
-  36: 'YuTing LL'
-  37: 'Other Landing'
-  38: 'LHA LL'
-  39: 'LSD 41 LL'
-  40: 'Other Merchant'
-  41: 'Ferry'
-  42: 'Nimitz'
-  43: 'Yacht'
-  44: 'YuZhao LL'
-  45: 'Enterprise'
-  46: 'Medical Ship'
-  47: 'Training Ship'
-  48: 'Midway'
-  49: 'Wasp LL'
+  0: 'Other Ship'
+  1: 'Warship'
+  2: 'Other Merchant'
+  3: 'Container Ship'
+  4: 'Cargo Ship'
+  5: 'Barge'
+  6: 'Fishing Vessel'
+  7: 'Oil Tanker'
+  8: 'Motorboat'
+  9: 'Dock'
 
 
 # Download script/URL (optional) ---------------------------------------------------------------------------------------
@@ -82,13 +42,28 @@ download: |
   import numpy as np
 
   from ultralytics.utils import LOGGER, TQDM
+
+  class_mapping_overrides = {
+    **{x: 1 for x in range(3, 37)},
+    37: 2,
+    38: 3,
+    39: 2,
+    40: 4,
+    41: 5,
+    **{x: 2 for x in range(42,46)},
+    46: 6,
+    47: 7,
+    48: 2,
+    49: 8,
+    50: 9,
+  }
   
   
   def convert_coco(
       labels_dir="../coco/annotations/",
       images_dir="../coco/images/",
       save_dir="coco_converted/",
-      class_remap={},
+      class_map_override={},
   ):
       # Create dataset directory
       save_dir = Path(save_dir)
@@ -133,10 +108,10 @@ download: |
                       continue
   
                   coco_cls = ann["category_id"]
-                  if coco_cls in class_remap:
-                      cls = class_remap[coco_cls] - 1  # class
+                  if coco_cls in class_map_override:
+                      cls = class_map_override[coco_cls]
                   else:
-                      cls = coco_cls - 1
+                      cls = coco_cls - 1  # class
                   box = [cls] + box.tolist()
                   if box not in bboxes:
                       bboxes.append(box)
@@ -150,4 +125,4 @@ download: |
                       file.write(("%g " * len(line)).rstrip() % line + "\n")
   
   
-  convert_coco(Path(yaml["path"]) / "COCO_Format", Path(yaml["path"]) / "VOC_Format" / "JPEGImages", yaml["path"])
+  convert_coco(Path(yaml["path"]) / "COCO_Format", Path(yaml["path"]) / "VOC_Format" / "JPEGImages", yaml["path"], class_mapping_overrides)
