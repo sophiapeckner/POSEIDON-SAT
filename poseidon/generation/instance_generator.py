@@ -235,6 +235,10 @@ class InstanceGenerator():
         
         with open(os.path.join(augmented_dataset.coco_root_dir, annotation_file), 'w') as f:
             json.dump(labels, f)
+        
+        # Validation set is not augmented, so just copy the annotation file
+        val_annotation_filename = dataset.get_coco_annotation_file_name('val')
+        shutil.copyfile(os.path.join(dataset.coco_root_dir, val_annotation_filename), os.path.join(augmented_dataset.coco_root_dir, val_annotation_filename))
 
         return augmented_dataset
 
