@@ -115,7 +115,7 @@ download: |
               imgToAnns[ann["image_id"]].append(ann)
           # Copy Images
           for img in data["images"]:
-              shutil.copyfile(Path(images_dir) / img["file_name"], image_out_path / img["file_name"])
+              shutil.move(Path(images_dir) / img["file_name"], image_out_path / img["file_name"])
   
           # Write labels file
           for img_id, anns in TQDM(imgToAnns.items(), desc=f"Annotations {json_file}"):
