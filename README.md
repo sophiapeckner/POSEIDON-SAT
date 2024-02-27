@@ -40,7 +40,7 @@ TODO: Add frozen requirements file after finishing everything
 
 This repository includes dataset configs for the original ShipRSImageNet dataset, as well as augmented versions of the dataset in the `yolo` directory. These are used to train and evaluate the YOLOv8 model on the original and augmented datasets. These dataset configs focus on testing a reduced number of classes. Most significantly is grouping together the warship classes since there are so many of them in the dataset, and the augmentation examples in this repository focus on augmenting the fishing vessel class.
 
-A `train.py` and `test.py` script are included in the root of this repository for the purpose of evaluating the impact of the augmentation on the YOLOv8n model's performance on the ShipRSImageNet dataset. These scripts take a parameter that indicates which dataset to use for a given run, as well as other parameters that will be passed on to YOLO. Results will be saved in the usual directories that are created by YOLOv8.
+A `train.py` and `test.py` script are included in the root of this repository for the purpose of evaluating the impact of the augmentation on the YOLOv8 model's performance on the ShipRSImageNet dataset. These scripts take a parameter that indicates which dataset to use for a given run, as well as other parameters that will be passed on to YOLO. Results will be saved in the usual directories that are created by YOLOv8.
 
 ## License
 
