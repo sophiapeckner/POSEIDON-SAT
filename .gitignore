@@ -1,5 +1,9 @@
 .vscode
 
+# Weights and Run Results
+*.pt
+runs
+
 # Dataset folders
 ShipRSImageNet_V1*
 augmentation_candidates
