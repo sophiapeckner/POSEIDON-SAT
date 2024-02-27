@@ -35,3 +35,7 @@ After the `selected_for_augmentation.txt` file is created, the ShipRSImageNet da
 To view the augmented images, you can use the `show_images_selected_for_augmentation.py` script and pass the path to the augmented images dataset directory. Ex. `python show_images_selected_for_augmentation.py augmented_image_folder/`
 
 TODO: Add frozen requirements file after finishing everything
+
+## License
+
+All code in this repository is licensed under the license specified in the root-level `LICENSE` file, unless otherwise specified in the file itself.
