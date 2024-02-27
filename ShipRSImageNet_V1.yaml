@@ -1,0 +1,153 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# ShipRSImageNet Dataset https://github.com/zzndream/ShipRSImageNet by Z. Zhang, L. Zhang, Y. Wang, P. Feng and R. He - Paper: https://doi.org/10.1109/JSTARS.2021.3104230
+# Example usage: yolo train data=ShipRSImageNet_V1.yaml
+# parent
+# └── datasets
+#     └── ShipRSImageNet_V1  ← Dataset directory from archive download (4.6 GB)
+
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: ../datasets/ShipRSImageNet_V1
+train: # train images (relative to 'path')  16551 images
+  - images/train
+val: # val images (relative to 'path')  4952 images
+  - images/val
+# Labels for test images were not published
+#test: # test images (optional)
+#  - images/test
+
+names:
+  0: 'Other Warship'
+  1: 'Atago DD'
+  2: 'Container Ship'
+  3: 'Cargo'
+  4: 'Test Ship'
+  5: 'Sanantonio AS'
+  6: 'Other Aircraft Carrier'
+  7: 'Other Destroyer'
+  8: 'Dock'
+  9: 'AOE'
+  10: 'Masyuu AS'
+  11: 'Perry FF'
+  12: 'Other Ship'
+  13: 'Other Auxiliary Ship'
+  14: 'Austin LL'
+  15: 'Ticonderoga'
+  16: 'Arleigh Burke DD'
+  17: 'Hovercraft'
+  18: 'Patrol'
+  19: 'Hatsuyuki DD'
+  20: 'EPF'
+  21: 'Oil Tanker'
+  22: 'Other Frigate'
+  23: 'YuDeng LL'
+  24: 'RoRo'
+  25: 'Tugboat'
+  26: 'Sailboat'
+  27: 'Barge'
+  28: 'Motorboat'
+  29: 'Submarine'
+  30: 'YuDao LL'
+  31: 'Osumi LL'
+  32: 'Commander'
+  33: 'Hyuga DD'
+  34: 'Asagiri DD'
+  35: 'Fishing Vessel'
+  36: 'YuTing LL'
+  37: 'Other Landing'
+  38: 'LHA LL'
+  39: 'LSD 41 LL'
+  40: 'Other Merchant'
+  41: 'Ferry'
+  42: 'Nimitz'
+  43: 'Yacht'
+  44: 'YuZhao LL'
+  45: 'Enterprise'
+  46: 'Medical Ship'
+  47: 'Training Ship'
+  48: 'Midway'
+  49: 'Wasp LL'
+
+
+# Download script/URL (optional) ---------------------------------------------------------------------------------------
+download: |
+  # Adapted from https://github.com/ultralytics/ultralytics/blob/f8e681c2be251562633d424f4a1a1cc7da526bed/ultralytics/data/converter.py - AGPL-3.0 License
+
+  import re
+  import json
+  import shutil
+  from collections import defaultdict
+  from pathlib import Path
+
+  import numpy as np
+
+  from ultralytics.utils import LOGGER, TQDM
+  
+  
+  def convert_coco(
+      labels_dir="../coco/annotations/",
+      images_dir="../coco/images/",
+      save_dir="coco_converted/",
+      class_remap={},
+  ):
+      # Create dataset directory
+      save_dir = Path(save_dir)
+      for p in save_dir / "labels", save_dir / "images":
+          p.mkdir(parents=True, exist_ok=True)  # make dir
+  
+      # Import json
+      for split in "train", "val":
+          json_file = Path(labels_dir).resolve() / f"ShipRSImageNet_bbox_{split}_level_3.json"
+          fn = Path(save_dir) / "labels" / re.sub('_level_\d$', '', json_file.stem.replace("ShipRSImageNet_bbox_", ""))  # folder name
+          fn.mkdir(parents=True, exist_ok=True)
+          with open(json_file) as f:
+              data = json.load(f)
+  
+          # Create image directory
+          image_out_path = Path(save_dir) / "images" / split
+          image_out_path.mkdir(parents=True, exist_ok=True)
+  
+          # Create image dict
+          images = {f'{x["id"]:d}': x for x in data["images"]}
+          # Create image-annotations dict
+          imgToAnns = defaultdict(list)
+          for ann in data["annotations"]:
+              imgToAnns[ann["image_id"]].append(ann)
+          # Copy Images
+          for img in data["images"]:
+              shutil.move(Path(images_dir) / img["file_name"], image_out_path / img["file_name"])
+  
+          # Write labels file
+          for img_id, anns in TQDM(imgToAnns.items(), desc=f"Annotations {json_file}"):
+              img = images[f"{img_id:d}"]
+              h, w, f = img["height"], img["width"], img["file_name"]
+  
+              bboxes = []
+              for ann in anns:
+                  # The COCO box format is [top left x, top left y, width, height]
+                  box = np.array(ann["bbox"], dtype=np.float64)
+                  box[:2] += box[2:] / 2  # xy top-left corner to center
+                  box[[0, 2]] /= w  # normalize x
+                  box[[1, 3]] /= h  # normalize y
+                  if box[2] <= 0 or box[3] <= 0:  # if w <= 0 and h <= 0
+                      continue
+  
+                  coco_cls = ann["category_id"]
+                  if coco_cls in class_remap:
+                      cls = class_remap[coco_cls] - 1  # class
+                  else:
+                      cls = coco_cls - 1
+                  box = [cls] + box.tolist()
+                  if box not in bboxes:
+                      bboxes.append(box)
+  
+              # Write
+              with open((fn / f).with_suffix(".txt"), "a") as file:
+                  for i in range(len(bboxes)):
+                      line = (
+                          *(bboxes[i]),
+                      )  # cls, box or segments
+                      file.write(("%g " * len(line)).rstrip() % line + "\n")
+  
+  
+  convert_coco(Path(yaml["path"]) / "COCO_Format", Path(yaml["path"]) / "VOC_Format" / "JPEGImages", yaml["path"])

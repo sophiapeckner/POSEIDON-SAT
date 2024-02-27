@@ -1,13 +1,13 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
-# ShipRSImageNet Dataset https://github.com/zzndream/ShipRSImageNet by Z. Zhang, L. Zhang, Y. Wang, P. Feng and R. He - Paper: https://doi.org/10.1109/JSTARS.2021.3104230
-# Example usage: yolo train data=ShipRSImageNet.yaml
+# Augmented ShipRSImageNet Dataset
+# Example usage: yolo train data=ShipRSImageNet_V1.yaml
 # parent
 # └── datasets
-#     └── ShipRSImageNet_V1  ← Dataset directory from archive download (4.6 GB)
+#     └── ShipRSImageNet_V1_Augmented
 
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: ../datasets/ShipRSImageNet_V1
+path: ../datasets/ShipRSImageNet_V1_Augmented
 train: # train images (relative to 'path')  16551 images
   - images/train
 val: # val images (relative to 'path')  4952 images
@@ -150,4 +150,4 @@ download: |
                       file.write(("%g " * len(line)).rstrip() % line + "\n")
   
   
-  convert_coco(Path(yaml["path"]) / "COCO_Format", Path(yaml["path"]) / "VOC_Format" / "JPEGImages", yaml["path"])
+  convert_coco(yaml["path"], Path(yaml["path"]) / "images", yaml["path"])
