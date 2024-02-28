@@ -16,7 +16,7 @@ def main():
     parser.add_argument('-n', '--run-name', type=str, default=None, help='The name of the run to use for outputs in the project directory')
     parser.add_argument('-p', '--project', type=str, default='default-project', help='The name of the project directory under runs to use for outputs')
     parser.add_argument('-r', '--resume', action='store_true', help='Resume training session from a previous run using the weights file specified with --model')
-    parser.add_argument('-b', '--batch-size', type=int, default=16, help='The batch size to use for training. Set to -1 to use AutoBatch. Defaults to 16')
+    parser.add_argument('-b', '--batch-size', type=int, default=32, help='The batch size to use for training. Set to -1 to use AutoBatch. Defaults to 16')
     parser.add_argument('--no-pretrained', action='store_true', help='Do not use pretrained yolo model weights as a starting point for training. Default is to use pretrained weights.')
     parser.add_argument('--no-training-plots', action='store_true', help='Do not generate plots and visuals of training progress')
     
