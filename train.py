@@ -28,7 +28,7 @@ def main():
     
     yolo = YOLO(model=model_config, task='detect')
     yolo.train(data=dataset_config,
-               imgsz=930,
+               imgsz=960, # 930x930 is the most common resolution of our train images, but we need imgsz to be a multiple of the batch size
                seed=SEED,
                epochs=args.epochs,
                batch=args.batch_size,
