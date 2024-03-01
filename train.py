@@ -17,6 +17,7 @@ def main():
     parser.add_argument('-c', '--use-class-weights', action='store_true', help='Weight each class to adjust for class imbalance in classification loss')
     parser.add_argument('-n', '--run-name', type=str, default=None, help='The name of the run to use for outputs in the project directory')
     parser.add_argument('-p', '--project', type=str, default='default-project', help='The name of the project directory under runs to use for outputs')
+    parser.add_argument('-f', '--force-overwrite', action='store_true', help='Overwrite the project/run name directory if it already exists rather than appending a number to the end of the name.')
     parser.add_argument('-r', '--resume', action='store_true', help='Resume training session from a previous run using the weights file specified with --model')
     parser.add_argument('-b', '--batch-size', type=int, default=32, help='The batch size to use for training. Set to -1 to use AutoBatch. Defaults to 16')
     parser.add_argument('--no-pretrained', action='store_true', help='Do not use pretrained yolo model weights as a starting point for training. Default is to use pretrained weights.')
@@ -37,6 +38,7 @@ def main():
                batch=args.batch_size,
                name=args.run_name,
                project=str(Path('runs') / args.project),
+               exist_ok=args.force_overwrite,
                resume=args.resume,
                plots=not args.no_training_plots)
     
