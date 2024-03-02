@@ -29,8 +29,8 @@ def labels_to_class_pos_weights(labels, nc=80):
 
     classes = np.concatenate([label['cls'].astype(int) for label in labels]).squeeze() # classes.shape = (num_instances,)
     occurrences_per_class = np.bincount(classes, minlength=nc)  # occurrences per class
+    largest_class_size = np.max(occurrences_per_class)
 
-    instance_count = classes.shape[0]
-    weights = (instance_count - occurrences_per_class) / occurrences_per_class  # Weight of positive instances of each class = negative_examples_of_class / positive_examples_of_class
+    weights = largest_class_size / occurrences_per_class  # Weight of class defined in terms of how much to upscale the loss of class to match weight of largest class
     weights[occurrences_per_class == 0] = 1  # Set weights of classes with no instances to 1 to avoid weighting the loss of positive examples for these classes
     return torch.from_numpy(weights).float()
