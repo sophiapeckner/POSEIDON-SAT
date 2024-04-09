@@ -3,8 +3,8 @@ import argparse
 from pathlib import Path
 from ultralytics import YOLO
 
-from yolo.dataset_util import check_dataset
-from yolo.class_weighted_trainer import ClassWeightedDetectionTrainer
+from yolov8.dataset_util import check_dataset
+from yolov8.class_weighted_trainer import ClassWeightedDetectionTrainer
 
 
 SEED = 2378110213

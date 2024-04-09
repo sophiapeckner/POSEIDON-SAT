@@ -4,7 +4,7 @@ from ultralytics.models.yolo.detect import DetectionTrainer
 from ultralytics.data import build_yolo_dataset
 from ultralytics.utils import RANK
 
-from yolo.class_weighted_yolo import ClassWeightedDetectionModel
+from yolov8.class_weighted_yolo import ClassWeightedDetectionModel
 
 
 class ClassWeightedDetectionTrainer(DetectionTrainer):

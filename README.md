@@ -6,6 +6,14 @@ The ShipRSImageNet dataset is avaialble in the [GitHub repository](https://githu
 
 The [ShipRSImageNet devkit](https://github.com/zzndream/ShipRSImageNet_devkit) is useful for exploring the dataset, as are the various functions inside the `shiprsimagenet.py` file.
 
+## Cloning This Repository
+
+Make sure to clone the repository with submodules to include the YOLOv5 repository, which is used for training and evaluation against YOLOv5. To clone the repository with submodules, use the following command:
+
+```bash
+git clone --recurse-submodules
+```
+
 ## Notable Modifications
 
 As this fork of POSEIDON is interested in dataset augmentation of a class of interest, rather than the complete balacing of an entire dataset, and considers particular needs for applying POSEIDON to the ShipRSImageNet dataset.
