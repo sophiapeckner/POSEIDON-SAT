@@ -1,0 +1,14 @@
+Augmented with matched resolutions at 300 epochs gets a similar improvement as the baseline of class weighting with 100 epochs. Class weighting with 300 epochs is still pending (though previous run indicated a regression in performance). Even comapred to weighting, error distribution is better. Comparing these two, the model as a whole additionally improved along the diagonal. Augmenting several other underrepresented classes, especially those that the fishing vessels get confused for, could further enhance the model's general performance across the board.
+
+Augmentation + weighting looks to give better results by allowing the model to train longer without over-fitting (compare loss function plots). The class weighting reduced training may be an acceptable trade-off for certain systems by reducing the spread of errors/severity of errors at the cost of lower accuracy to avoid overfitting, though augmentation seems to at minimum, reduce the spread of errors, regardless of what method is being compared.
+
+Augmentation also looks to be helping notably with false-positives. Just weighting makes false-positives relatively problemmatic. Essentially, if you care about false-positives, you really should augment, even when combining with class weighting.
+
+Runs of interest to compare with the baselines:
+100-epoch runs:
+- Mixed Resolution augmentation
+- Weighting vs Weighting + Augmentation - False Positive for Fishing vessel class. Weighting alone also looks to be more prone to overfitting. Adding augmentation seems to help push back how long it will take for the model to start over-fitting
+300-epoch runs:
+- Matched Resolution Augmentation - Matches the 100-epoch weighted version (300-epoch weighted version is probably not going to improve) without the impact on false-positives
+- Weighted versions don't tend to improve after 100-epochs, so the augmetnation method performing well without overfitting as soon is notable.
+
