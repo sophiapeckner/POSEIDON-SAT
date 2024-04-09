@@ -9,5 +9,16 @@ matplotlib
 # It is recommended to install pytorch and torchvision before anything in
 # this file if you want to perform evaluation on augmented datasets to avoid
 # potential CUDA version issues. If you do not want to perform evaluation
-# on augmented datasets, you can remove the lines below
+# on augmented datasets, you can remove the lines below (YOLO dependencies)
 ultralytics
+gitpython
+opencv-python
+psutil
+PyYAML
+requests
+scipy
+thop
+torch
+torchvision
+tensorboard
+seaborn
