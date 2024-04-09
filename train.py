@@ -1,3 +1,4 @@
+import re
 import argparse
 from pathlib import Path
 from ultralytics import YOLO
@@ -27,7 +28,11 @@ def main():
     
     dataset_config = check_dataset(args.dataset)
     
-    model_config = f'{args.model}.yaml' if args.no_pretrained else f'{args.model}.pt'
+    model : str = args.model
+    model = re.sub(r'\.pt$', '', model) if model.endswith('.pt') else model
+    model = re.sub(r'\.yaml$', '', model) if model.endswith('.yaml') else model
+    
+    model_config = f'{model}.yaml' if args.no_pretrained else f'{model}.pt'
     
     yolo = YOLO(model=model_config, task='detect')
     yolo.train(data=dataset_config,
