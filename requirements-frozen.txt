@@ -32,8 +32,6 @@ zipp==3.17.0
 # in networkx that dropped support for python 3.8.
 # ========================================================================
 
-networkx==3.0 # Need to install this before torch because of breaking change in newer versions with python 3.8
-
 GitPython==3.1.43
 #nvidia_tensorrt==8.4.3.1 # For tensorrt export
 #onnx==1.15.0 # For onnx and tensorrt export
@@ -58,7 +56,6 @@ ultralytics==8.1.5
 gitdb==4.0.11
 smmap==5.0.1
 py-cpuinfo==9.0.0
-certifi==2019.11.28
 charset-normalizer==3.3.2
 idna==2.8
 urllib3==1.25.8
