@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 from ultralytics import YOLO
 
-from yolov8.dataset_util import check_dataset
+from yolo_dataset_cfg.dataset_util import check_dataset
 from yolov8.class_weighted_trainer import ClassWeightedDetectionTrainer
 
 
