@@ -101,7 +101,6 @@ dependencies:
   - readline=8.2=h5eee18b_0
   - requests=2.31.0=py38h06a4308_1
   - scipy=1.10.1=py38h14f4228_0
-  - setuptools=68.2.2=py38h06a4308_0
   - six=1.14.0=py38h06a4308_0
   - sqlite=3.41.2=h5eee18b_0
   - sympy=1.12=py38h06a4308_0
@@ -110,7 +109,6 @@ dependencies:
   - torchvision=0.17.0=py38_cu118
   - typing_extensions=4.9.0=py38h06a4308_1
   - urllib3=1.25.8=py38_0
-  - wheel=0.41.2=py38h06a4308_0
   - xz=5.4.6=h5eee18b_0
   - yaml=0.2.5=h7b6447c_0
   - zipp=3.17.0=py38h06a4308_0
@@ -135,7 +133,7 @@ dependencies:
       - matplotlib==3.7.4
       - numpy==1.24.4
       - opencv-python==4.8.1.78
-      - pillow==10.1.0
+      - pillow==10.3.0
       - protobuf==5.26.1
       - psutil==5.9.6
       - pyasn1==0.6.0
@@ -144,6 +142,7 @@ dependencies:
       - requests-oauthlib==2.0.0
       - rsa==4.9
       - seaborn==0.13.0
+      - setuptools==69.2.0
       - smmap==5.0.1
       - tensorboard==2.14.0
       - tensorboard-data-server==0.7.2
@@ -151,3 +150,4 @@ dependencies:
       - tqdm==4.66.1
       - ultralytics==8.1.5
       - werkzeug==3.0.2
+      - wheel==0.43.0
