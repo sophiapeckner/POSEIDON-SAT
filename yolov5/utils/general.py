@@ -769,7 +769,8 @@ def labels_to_class_pos_weights(labels, nc=80):
     if labels[0] is None:  # no labels loaded
         return torch.Tensor()
 
-    classes = np.concatenate([label['cls'].astype(int) for label in labels]).squeeze() # classes.shape = (num_instances,)
+    labels = np.concatenate(labels, 0)  # labels.shape = (866643, 5) for COCO
+    classes = labels[:, 0].astype(int)  # labels = [class xywh]
     occurrences_per_class = np.bincount(classes, minlength=nc)  # occurrences per class
     largest_class_size = np.max(occurrences_per_class)
 
