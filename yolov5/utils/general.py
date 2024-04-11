@@ -764,6 +764,20 @@ def labels_to_class_weights(labels, nc=80):
     return torch.from_numpy(weights).float()
 
 
+def labels_to_class_pos_weights(labels, nc=80):
+    """Calculates class weights from labels to handle class imbalance in training"""
+    if labels[0] is None:  # no labels loaded
+        return torch.Tensor()
+
+    classes = np.concatenate([label['cls'].astype(int) for label in labels]).squeeze() # classes.shape = (num_instances,)
+    occurrences_per_class = np.bincount(classes, minlength=nc)  # occurrences per class
+    largest_class_size = np.max(occurrences_per_class)
+
+    weights = largest_class_size / occurrences_per_class  # Weight of class defined in terms of how much to upscale the loss of class to match weight of largest class
+    weights[occurrences_per_class == 0] = 1  # Set weights of classes with no instances to 1 to avoid weighting the loss of positive examples for these classes
+    return torch.from_numpy(weights).float()
+
+
 def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):
     """Calculates image weights from labels using class weights for weighted sampling."""
     # Usage: index = random.choices(range(n), weights=image_weights, k=1)  # weighted image sample

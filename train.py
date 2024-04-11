@@ -63,11 +63,11 @@ def main():
                    resume=args.resume,
                    plots=not args.no_training_plots)
     elif model_version == 5:
-        # TODO: Implement class weighting in loss function for YOLOv5
         train_yolov5(
             data=dataset_config,
             weights='' if args.no_pretrained else model_config,
             cfg=model_config if args.no_pretrained else '',
+            class_weights=args.use_class_weights,
             device=args.device,
             imgsz=IMG_SZ,
             seed=SEED,

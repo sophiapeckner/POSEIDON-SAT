@@ -70,6 +70,7 @@ from utils.general import (
     init_seeds,
     intersect_dicts,
     labels_to_class_weights,
+    labels_to_class_pos_weights,
     labels_to_image_weights,
     methods,
     one_cycle,
@@ -310,6 +311,7 @@ def train(hyp, opt, device, callbacks):
     model.nc = nc  # attach number of classes to model
     model.hyp = hyp  # attach hyperparameters to model
     model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device) * nc  # attach class weights
+    model.class_pos_weights = labels_to_class_pos_weights(dataset.labels, nc).to(device) # attach class positive weights
     model.names = names
 
     # Start training
@@ -323,7 +325,7 @@ def train(hyp, opt, device, callbacks):
     scheduler.last_epoch = start_epoch - 1  # do not move
     scaler = torch.cuda.amp.GradScaler(enabled=amp)
     stopper, stop = EarlyStopping(patience=opt.patience), False
-    compute_loss = ComputeLoss(model)  # init loss class
+    compute_loss = ComputeLoss(model, use_class_weights=opt.class_weights if hasattr(opt, 'class_weights') else False)  # init loss class
     callbacks.run("on_train_start")
     LOGGER.info(
         f'Image sizes {imgsz} train, {imgsz} val\n'
