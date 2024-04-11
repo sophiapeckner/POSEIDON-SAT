@@ -12,3 +12,7 @@ Runs of interest to compare with the baselines:
 - Matched Resolution Augmentation - Matches the 100-epoch weighted version (300-epoch weighted version is probably not going to improve) without the impact on false-positives
 - Weighted versions don't tend to improve after 100-epochs, so the augmetnation method performing well without overfitting as soon is notable.
 
+For YOLOv5, class weighting performed worse than the baseline. Only augmentation on its own gave a notable improvement. As opposed to YOLOv8, YOLOv5 performed better with the mixed resolution dataset comapred to the matched resolution dataset, where yolov8 did better with matched resolution images.
+The 300 epoch versions of YOLOv5 typically performed worse than the 100-epoch versions in general, though the baseline did better with 300 epochs. Looking at the loss functions between train and test, it generally looks like YOLOv5 would have done better with only 50 epochs based on val vs train loss.
+Best for v5n was 100 epochs mixedres augment only, am trying this at 50 epochs.
+
