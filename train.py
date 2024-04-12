@@ -25,6 +25,7 @@ def main():
     parser.add_argument('-b', '--batch-size', type=int, default=32, help='The batch size to use for training. Set to -1 to use AutoBatch. Defaults to 32')
     parser.add_argument('-v', '--model-version', type=int, default=None, help='Use to specify the YOLO version of the model. Required if it cannot be inferred based on the model name.', choices=[5, 8])
     parser.add_argument('-d', '--device', type=str, default='0', help='The GPU device or devices, given as a comma-separated list, to use for training. Default is 0')
+    parser.add_argument('-s', '--seed', type=int, default=SEED, help='The random seed to use for training. Defaults to 2378110213')
     parser.add_argument('--no-pretrained', action='store_true', help='Do not use pretrained yolo model weights as a starting point for training. Default is to use pretrained weights.')
     parser.add_argument('--no-training-plots', action='store_true', help='Do not generate plots and visuals of training progress')
 
@@ -54,7 +55,7 @@ def main():
                    trainer=ClassWeightedDetectionTrainer if args.use_class_weights else None,
                    device=args.device,
                    imgsz=IMG_SZ,
-                   seed=SEED,
+                   seed=args.seed,
                    epochs=args.epochs,
                    batch=args.batch_size,
                    name=args.run_name,
@@ -70,7 +71,7 @@ def main():
             class_weights=args.use_class_weights,
             device=args.device,
             imgsz=IMG_SZ,
-            seed=SEED,
+            seed=args.seed,
             epochs=args.epochs,
             batch_size=args.batch_size,
             project='runs/detect' if args.project is None else str(Path('runs') / args.project),

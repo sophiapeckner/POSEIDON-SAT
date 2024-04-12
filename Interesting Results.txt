@@ -7,12 +7,29 @@ Augmentation also looks to be helping notably with false-positives. Just weighti
 Runs of interest to compare with the baselines:
 100-epoch runs:
 - Mixed Resolution augmentation
-- Weighting vs Weighting + Augmentation - False Positive for Fishing vessel class. Weighting alone also looks to be more prone to overfitting. Adding augmentation seems to help push back how long it will take for the model to start over-fitting
+- Weighting vs Weighting + Augmentation - False Positive for Fishing vessel class. Weighting alone also looks to be more prone to overfitting. Adding augmentation seems to help push back how long it will take for the model to start over-fitting of the change in spread of errors that weighting adds is beneficial.
 300-epoch runs:
 - Matched Resolution Augmentation - Matches the 100-epoch weighted version (300-epoch weighted version is probably not going to improve) without the impact on false-positives
 - Weighted versions don't tend to improve after 100-epochs, so the augmetnation method performing well without overfitting as soon is notable.
 
-For YOLOv5, class weighting performed worse than the baseline. Only augmentation on its own gave a notable improvement. As opposed to YOLOv8, YOLOv5 performed better with the mixed resolution dataset comapred to the matched resolution dataset, where yolov8 did better with matched resolution images.
-The 300 epoch versions of YOLOv5 typically performed worse than the 100-epoch versions in general, though the baseline did better with 300 epochs. Looking at the loss functions between train and test, it generally looks like YOLOv5 would have done better with only 50 epochs based on val vs train loss.
-Best for v5n was 100 epochs mixedres augment only, am trying this at 50 epochs.
+For YOLOv5, class weighting still yielded a benefit over the baseline, as did augmentation, but augmentation continues to help reduce the severity of errors. This is the case when looking at 100 epoch training runs. This was likely overfitting, however, based on loss curves.
+Augmenting with mixed resolutions at 100 epochs was the top performer of yolov5 nano. 300 epoch training generally reduced performance and resulted in extreme overfitting, based on the trend of the validation loss. 50 epochs for yolov5 underfit and lead to a worse model.
+The augmentation model continued to indicate that it was a better model overall for the 100 epoch nano model, though it may be slightly overfit.
+Combining augmentation and class weighting reduced performance for yolov5n across the board.
 
+For YOLOv5s, things got a little easier to interpret and work with. Size wise, it is comparable to YOLOv8n and performed better than v5n at only 50 epochs, so there was less overfitting.
+for v5s, weighting made things worse, though there was not the same regression as in v5n for the 100 epoch version. For 50 epochs with weighting, true positives of fishing vessels were lower than the baseline, but errors were better for class weighting.
+Weighting and augmentation resulted in a regression. Augmented 50 and weighted 50 were the best options for v5s in reducing errors, but the augmented version looks to be better overall looking at the confusion matrix diagonal and better true positives.
+v5s with 50 epochs was about the only v5 model that could be used after training without starting to over-fit. Even though performance gains of true positives were not found in yolov8 when avoiding overfit in v5, yolov5s still received a model quality benefit overall.
+Augmentation at 50 epochs of yolov5s was the best without weighting of the 50 epoch models. Though it did not improve true positive predictions of fishing vessels, it did reduce the spread of errors.
+
+With a bit more training with a little potential overfit at 100 epochs, the performance gain was still notable, as seen in YOLOv5n. YOLOv5s at 100 epochs was a notable improvement from the 100 epoch baseline as well. It is worth noting that v5n at 100 epochs augmented still performed better, indicating that
+overfitting may be at play, which may explain why v5s did not perform as well, or perhaps we were lucky with the v5n augmented model.
+
+For less complex models, such as yolov5, which are more prone to overfitting, augmentation is pretty crucial, especially since the validation loss for weighted versions increases faster than for the baseline.
+This is a similar impact as with yolov8. For yolov5, augmentation+weighting did not reduce the rate of overfitting. This is likely due to the more complex loss structure of yolov5.
+The increased rate of overfitting impacted yolov5s more than yolov5n. Due to yolov5's ease of overfitting on small datasets, compared to v8, augmentation is crucial for v5.
+Models with complex losses should prefer augmentation.
+
+YOLOv8n looks to be the overall best performing model when used with just augmentation, and the benefits are maximized in such a model. For some smaller/simpler models, or models with more complex loss functions, like yolov5, the benefit of augmentation mostly comes in better error distribution,
+though it can improve performance if sufficient training time can be given without overfitting, seeing as v5n improved notably with augmentation and enough training time, though potentially at the cost of overfitting due to the smaller dataset size, combined with potential effects from a more complex loss function.
