@@ -1,4 +1,7 @@
 from argparse import ArgumentParser
+from pathlib import Path
+
+from ultralytics import YOLO
 
 
 def main():
@@ -29,13 +32,19 @@ def main():
         model = f'{model}.pt'
 
     if model_version == 8:
-        pass
+        opt_args = {} if args.dataset is None else {'data': args.dataset}
+        yolo = YOLO(model=model, task='detect')
+        yolo.val(device=args.device,
+                 name=args.run_name,
+                 project=None if args.project is None else str(Path('runs') / args.project),
+                 exist_ok=args.force_overwrite,
+                 plots=args.plots,
+                **opt_args)
     elif model_version == 5:
         pass
     else:
         # Should typically be caught by the argument parser, but just in case
         raise ValueError('Model version must be 5 or 8')
-
 
 
 if __name__ == '__main__':
