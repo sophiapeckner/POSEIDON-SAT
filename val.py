@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 from pathlib import Path
-
 from ultralytics import YOLO
+
+from yolo_dataset_cfg.dataset_util import check_dataset
 
 
 def main():
@@ -16,6 +17,8 @@ def main():
     parser.add_argument('--device', type=str, default='0', help='The GPU device or devices, given as a comma-separated list, to use for validation. Default is 0')
 
     args = parser.parse_args()
+
+    dataset_config = check_dataset(args.dataset) if args.dataset is not None else None
     
     model : str = args.model
     model_version : int | None = args.model_version
@@ -32,7 +35,7 @@ def main():
         model = f'{model}.pt'
 
     if model_version == 8:
-        opt_args = {} if args.dataset is None else {'data': args.dataset}
+        opt_args = {} if dataset_config is None else {'data': dataset_config}
         yolo = YOLO(model=model, task='detect')
         yolo.val(device=args.device,
                  name=args.run_name,
