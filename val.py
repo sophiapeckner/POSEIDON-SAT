@@ -1,3 +1,9 @@
+# NOTE: This script is not quite resulting in the same validation process that is performed at the very end of training, leading to some variations in results.
+# There are some parameters from training that are not being passed to the validation function here, such as the seed and a few others, which are likely resulting
+# in different validation results. This is not so much a problem for performance benchmarking, but it may be a problem for consistency in reported metrics.
+# As such, the results reported automatically at the end of training should be considered the most accurate and consistent results as far as classification and detection
+# metrics are concerned as variations my be slight, or potentially more significant.
+
 import yaml
 from argparse import ArgumentParser
 from pathlib import Path
@@ -46,8 +52,12 @@ def main():
         yolo_args['batch_size'] = 1
 
     if model_version == 8:
+        if 'batch_size' in yolo_args:
+            yolo_args['batch'] = yolo_args['batch_size']
+            yolo_args.pop('batch_size')
         yolo = YOLO(model=model, task='detect')
         yolo.val(device=args.device,
+                 imgsz=IMG_SZ,
                  name=args.run_name,
                  project=None if args.project is None else str(Path('runs') / args.project),
                  exist_ok=args.force_overwrite,
@@ -66,11 +76,6 @@ def main():
         if not 'data' in yolo_args:
             raise ValueError('Could not infer dataset from weights path. Please specify the dataset with --dataset')
         
-        # NOTE: This is not quite resulting in the same validation process that is performed at the very end of training, unlike the implementation used for YOLOv8.
-        # There are some parameters from training that are not being passed to the validation function here, such as the seed and a few others, which are likely resulting
-        # in different validation results. This is not a problem for performance benchmarking, but it may be a problem for consistency in reported metrics.
-        # As such, the results reported automatically at the end of training should be considered the most accurate and consistent results as far as classification and detection
-        # metrics are concerned. This should only be used for performance benchmarking at this point for YOLOv5.
         val_yolov5(weights=model,
                    imgsz=IMG_SZ,
                    device=args.device,
