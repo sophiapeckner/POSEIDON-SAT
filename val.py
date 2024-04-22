@@ -60,6 +60,8 @@ def main():
         if not 'data' in yolo_args:
             raise ValueError('Could not infer dataset from weights path. Please specify the dataset with --dataset')
         
+        # NOTE: This is not quite resulting in the same validation process that is performed at the very end of training, unlike the implementation used for YOLOv8.
+        # Should use the validation results produced at the end of training job for consistency.
         val_yolov5(weights=model,
                    device=args.device,
                    project='runs/detect' if args.project is None else str(Path('runs') / args.project),
