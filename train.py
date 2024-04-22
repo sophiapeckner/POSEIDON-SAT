@@ -14,19 +14,19 @@ IMG_SZ = 960 # 930x930 is the most common resolution of our train images, but we
 
 def main():
     parser = ArgumentParser(description='Train YOLOv8 or YOLOv5 on a POSEIDON-augmented dataset, or the original dataset')
-    parser.add_argument('dataset', type=str, help='The name of the dataset directory containing the data to train on')
-    parser.add_argument('-m', '--model', type=str, default='yolov8n', help='The YOLO model to train. Can be a custom model path or the name of one of the built-in models. Default is yolov8n.')
+    parser.add_argument('dataset', type=str, help='The name of the dataset directory, in the root of the repository, to train the model on.')
+    parser.add_argument('-m', '--model', type=str, default='yolov8n', help='The YOLO model to train. Can be a custom model path or the name of one of the built-in models. Default is yolov8n')
     parser.add_argument('-e', '--epochs', type=int, default=100, help='The number of epochs to train for. Defaults to 100')
     parser.add_argument('-c', '--use-class-weights', action='store_true', help='Weight each class to adjust for class imbalance in classification loss')
     parser.add_argument('-n', '--run-name', type=str, default=None, help='The name of the run to use for outputs in the project directory')
     parser.add_argument('-p', '--project', type=str, default=None, help='The name of the project directory under runs to use for outputs')
-    parser.add_argument('-f', '--force-overwrite', action='store_true', help='Overwrite the project/run name directory if it already exists rather than appending a number to the end of the name.')
+    parser.add_argument('-f', '--force-overwrite', action='store_true', help='Overwrite the project/run name directory if it already exists rather than appending a number to the end of the name')
     parser.add_argument('-r', '--resume', action='store_true', help='Resume training session from a previous run using the weights file specified with --model')
     parser.add_argument('-b', '--batch-size', type=int, default=32, help='The batch size to use for training. Set to -1 to use AutoBatch. Defaults to 32')
     parser.add_argument('-v', '--model-version', type=int, default=None, help='Use to specify the YOLO version of the model. Required if it cannot be inferred based on the model name.', choices=[5, 8])
     parser.add_argument('-d', '--device', type=str, default='0', help='The GPU device or devices, given as a comma-separated list, to use for training. Default is 0')
     parser.add_argument('-s', '--seed', type=int, default=SEED, help='The random seed to use for training. Defaults to 2378110213')
-    parser.add_argument('--no-pretrained', action='store_true', help='Do not use pretrained yolo model weights as a starting point for training. Default is to use pretrained weights.')
+    parser.add_argument('--no-pretrained', action='store_true', help='Do not use pretrained yolo model weights as a starting point for training. Default is to use pretrained weights')
     parser.add_argument('--no-training-plots', action='store_true', help='Do not generate plots and visuals of training progress')
 
     args = parser.parse_args()
