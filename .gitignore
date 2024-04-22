@@ -10,6 +10,7 @@ ShipRSImageNet_V1*
 !ShipRSImageNet_V1*.yaml
 augmentation_candidates
 fishing_vessel_instances
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
