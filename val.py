@@ -1,9 +1,3 @@
-# NOTE: This script is not quite resulting in the same validation process that is performed at the very end of training, leading to some variations in results.
-# There are some parameters from training that are not being passed to the validation function here, such as the seed and a few others, which are likely resulting
-# in different validation results. This is not so much a problem for performance benchmarking, but it may be a problem for consistency in reported metrics.
-# As such, the results reported automatically at the end of training should be considered the most accurate and consistent results as far as classification and detection
-# metrics are concerned as variations my be slight, or potentially more significant.
-
 import yaml
 from argparse import ArgumentParser
 from pathlib import Path
