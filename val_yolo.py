@@ -37,7 +37,7 @@ def main():
         else:
             raise ValueError('Model version must be specified with --model-version: Cannot infer model version from model name.')
     
-    if not model.endswith('.pt'):
+    if not model.endswith('.pt') and not model.endswith('.onnx') and not model.endswith('.engine'):
         model = f'{model}.pt'
     
     yolo_args = {} if dataset_config is None else {'data': dataset_config}
