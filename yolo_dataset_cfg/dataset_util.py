@@ -7,7 +7,7 @@ from ultralytics.utils import DATASETS_DIR
 def check_dataset(dataset_name: str):
     if not (DATASETS_DIR / dataset_name).is_dir():
         if not Path(dataset_name).is_dir():
-            raise FileNotFoundError(f'Could not find dataset directory {dataset_name}')
+            raise FileNotFoundError(f'Could not find dataset directory {str(DATASETS_DIR / dataset_name)}')
         print('Preparing dataset for conversion to YOLO format...')
         shutil.copytree(dataset_name, DATASETS_DIR / dataset_name)
     
