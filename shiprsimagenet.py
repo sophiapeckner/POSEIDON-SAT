@@ -60,6 +60,11 @@ class LabeledObject:
         self.rotated_bndbox = rotated_box
         self.level_group = levels
         self.location = location
+    
+    def get_yolo_class(self):
+        class_id = self.level_group[3]
+        class_id = ShipRSImageNet.yolo_class_remappings[class_id] if class_id in ShipRSImageNet.yolo_class_remappings else class_id
+        return ShipRSImageNet.yolo_class_names[class_id]
 
 
 class LabeledImage:
@@ -105,7 +110,37 @@ class LabeledImage:
 
 
 class ShipRSImageNet:
+
+    yolo_class_remappings = {
+        **{x: 1 for x in range(3, 37)},
+        37: 2,
+        38: 3,
+        39: 2,
+        40: 4,
+        41: 5,
+        **{x: 2 for x in range(42,46)},
+        46: 6,
+        47: 7,
+        48: 2,
+        49: 8,
+        50: 9,
+    }
+    
+    yolo_class_names = {
+        0: 'Other Ship',
+        1: 'Warship',
+        2: 'Other Merchant',
+        3: 'Container Ship',
+        4: 'Cargo Ship',
+        5: 'Barge',
+        6: 'Fishing Vessel',
+        7: 'Oil Tanker',
+        8: 'Motorboat',
+        9: 'Dock'
+    }
+
     def __init__(self, root_path: str):
+        self.name = root_path
         voc_root_path = os.path.join(root_path, 'VOC_Format')
         self.is_original_dataset = os.path.exists(voc_root_path)
 
@@ -115,8 +150,10 @@ class ShipRSImageNet:
 
         self._coco_annotation_file_prefix = 'ShipRSImageNet_bbox_'
         self._coco_annotation_file_suffix = '_level_3.json'
-        self._coco_image_to_annotation_map = None
+        self._coco_images = None
         self._coco_category_map = {}
+        self._coco_annotations = {}
+        self._coco_img_annotations = {}
 
 
     def get_image_set(self, image_set: str):
@@ -149,26 +186,30 @@ class ShipRSImageNet:
 
 
     def _get_coco_image(self, image_name: str):
-        if not self._coco_image_to_annotation_map:
-            self._coco_image_to_annotation_map = {}
+        if not self._coco_images:
+            self._coco_images = {}
             for image_set in ['val', 'train']:
                 metadata_file = os.path.join(self.coco_root_dir, self.get_coco_annotation_file_name(image_set))
                 try:
                     with open(metadata_file, 'r') as f:
                         metadata = json.load(f)
-                    for idx, image in enumerate(metadata['images']):
-                        self._coco_image_to_annotation_map[image['file_name']] = (metadata_file, image['id'], idx)
+                    self._coco_annotations[metadata_file] = {}
+                    self._coco_img_annotations[metadata_file] = {}
+                    for image in metadata['images']:
+                        self._coco_images[image['file_name']] = (metadata_file, image['id'], image)
                     for category in metadata['categories']:
                         self._coco_category_map[category['id']] = category['name']
+                    for annotation in metadata['annotations']:
+                        self._coco_annotations[metadata_file][annotation['id']] = annotation
+                        if annotation['image_id'] not in self._coco_img_annotations[metadata_file]:
+                            self._coco_img_annotations[metadata_file][annotation['image_id']] = []
+                        self._coco_img_annotations[metadata_file][annotation['image_id']].append(annotation['id'])
                 except FileNotFoundError:
                     continue
         
-        metadata_file, image_id, img_idx = self._coco_image_to_annotation_map[image_name]
-        with open(metadata_file, 'r') as f:
-            metadata = json.load(f)
-        
-        image_metadata = metadata['images'][img_idx]
-        image_annotations = [annotation for annotation in metadata['annotations'] if annotation['image_id'] == image_id]
+        metadata_file, image_id, image_metadata = self._coco_images[image_name]
+        image_annotations_ids = self._coco_img_annotations[metadata_file][image_id]
+        image_annotations = [self._coco_annotations[metadata_file][annotation_id] for annotation_id in image_annotations_ids]
         
         labeled_objects: list[LabeledObject] = []
         for annotation in image_annotations:
@@ -186,7 +227,7 @@ class ShipRSImageNet:
                 difficult=None,
                 bndbox=bndbox,
                 rotated_box=rotated_box,
-                levels=None,
+                levels=[annotation['category_id'] if i == 3 else -1 for i in range(4)],
                 location=None)
             labeled_objects.append(labeled_object)
         
