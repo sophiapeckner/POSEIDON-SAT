@@ -91,7 +91,7 @@ class LabeledImage:
             return None
         
 
-    def show(self, bboxes=True):
+    def show(self, bboxes=True, hbox_only=False):
         # Load the image
         img = Image.open(self.file_path)
 
@@ -101,7 +101,7 @@ class LabeledImage:
             for obj in self.objects:
                 rotated_box = obj.rotated_bndbox
                 imgDraw.polygon(obj.bndbox.to_polygon(), outline='red', width=3)
-                if rotated_box:
+                if rotated_box and not hbox_only:
                     imgDraw.polygon(rotated_box.to_polygon(), outline='lime', width=5)
 
         # Display the image
