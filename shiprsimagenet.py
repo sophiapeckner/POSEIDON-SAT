@@ -91,17 +91,18 @@ class LabeledImage:
             return None
         
 
-    def show(self):
+    def show(self, bboxes=True):
         # Load the image
         img = Image.open(self.file_path)
 
-        # Draw each bounding box
-        imgDraw = ImageDraw.Draw(img)
-        for obj in self.objects:
-            rotated_box = obj.rotated_bndbox
-            imgDraw.polygon(obj.bndbox.to_polygon(), outline='red', width=3)
-            if rotated_box:
-                imgDraw.polygon(rotated_box.to_polygon(), outline='lime', width=5)
+        if bboxes:
+            # Draw each bounding box
+            imgDraw = ImageDraw.Draw(img)
+            for obj in self.objects:
+                rotated_box = obj.rotated_bndbox
+                imgDraw.polygon(obj.bndbox.to_polygon(), outline='red', width=3)
+                if rotated_box:
+                    imgDraw.polygon(rotated_box.to_polygon(), outline='lime', width=5)
 
         # Display the image
         plt.imshow(img)
