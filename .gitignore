@@ -117,6 +117,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+my_venv
+env_requirements.txt
 .env
 .venv
 env/
@@ -160,3 +162,8 @@ docker/
 
 SDSYOLO/
 profiling/
+
+# Text files
+fishing_vessel_shiprs.txt
+fishing_vessel_xview.txt
+invalid_images.txt
